@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "1027843161239",
+    "project_id": "switchback-80e93",
+    "storage_bucket": "switchback-80e93.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1027843161239:android:388589c13f5ddb38cb7dd2",
+        "android_client_info": {
+          "package_name": "com.sauerapple.switchbacks"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1027843161239-rjeg1b7ps97oiv3rjkdkdaqi7nlvqoma.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyARJM3UvKKjX8NaiiTgUNsAgtYYLp_OEvs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1027843161239-rjeg1b7ps97oiv3rjkdkdaqi7nlvqoma.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1027843161239-qm3db4rkbggb7as6j24qpp93n344u7bq.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.sauerapple.switchbacks"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

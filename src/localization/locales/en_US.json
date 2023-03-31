@@ -1,0 +1,40 @@
+{
+  "getStarted": "Get Started",
+  "logIn": "Log In",
+  "logOut": "Log Out",
+  "closeMenu": "Close Menu",
+  "submit": "Submit",
+  "username": "Username",
+  "email": "E-mail address",
+  "and": "and",
+  "terms": {
+    "line1": "By continuing you agree to Circle",
+    "termsOfService": "Terms of Service",
+    "privacyPolicy": "Privacy Policy"
+  },
+  "slider": {
+    "one": "Water levels, trail conditions, animal sightings and more",
+    "two": "Report what you see and let the community know",
+    "three": "Rangers, local area managers, and hikers alike thank you"
+  },
+  "errors": {
+    "invalidCode": "Invalid code",
+    "verificationCodeEmpty": "Verification code cannot be empty",
+    "phoneNumberEmpty": "Phone number cannot be empty",
+    "phoneNumberInvalid": "Phone number is invalid",
+    "emailAddressServer": "Oops! There was an issue with your email address",
+    "displayNameServer": "Oops! There was an issue with your display name",
+    "displayNameTaken": "Oops! Looks like that username has already been taken"
+  },
+  "auth": {
+    "verificationCode": "Verification Code",
+    "whatPhoneNumber": "What's your phone number?",
+    "whatVerificationCode": "We'll send you a verification code to get you going",
+    "detailMessage": "Message and data rates may apply. We will send one text message per login attempt."
+  },
+  "user": {
+    "title": "Couple more questions to get you setup",
+    "displayNameHelper": "2 to 20 characters with no spaces",
+    "emailHelper": "Used for account and policy communication"
+  }
+}

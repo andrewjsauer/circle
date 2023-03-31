@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "target": "es2019",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "lib": ["es6", "dom"],
+    "baseUrl": ".",
+    "declaration": true,
+    "declarationMap": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "paths": {
+      "@assets/*": ["./src/assets/*"],
+      "@components/*": ["./src/components/*"],
+      "@config/*": ["./src/config/*"],
+      "@lib/*": ["./src/lib/*"],
+      "@localization/*": ["./src/localization/*"],
+      "@utils/*": ["./src/utils/index"],
+      "@screens/*": ["./src/screens/index"],
+      "@store/*": ["./src/store/*"],
+      "@constants/*": ["./src/constants/*"],
+      "@types/*": ["./src/types/*"]
+    },
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "jsx": "react-native",
+    "noEmit": true,
+    "resolveJsonModule": true,
+    "noImplicitAny": false
+  },
+  "include": ["src", "app.json"],
+  "exclude": ["node_modules", "__tests__"],
+  "files": ["./node_modules/redux-persist/types/integration/react.d.ts"]
+}
