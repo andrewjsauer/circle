@@ -121,8 +121,8 @@ const User = () => {
       updateUserData({
         displayName: displayName.value,
         email: email.value,
-        firstName: firstName.value,
-        id: userCurrent?.uid ?? "",
+        id: userCurrent.uid,
+        name: firstName.value,
       }),
     );
 

@@ -49,7 +49,7 @@ export const ProgressText = styled(Text)`
 
 export const NextButton = styled(Button)`
   width: 100%;
-  min-width: 250px;
+  min-width: 200px;
   margin-top: 8px;
-  padding: 6px 0;
+  padding: 2px 0;
 `;

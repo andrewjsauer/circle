@@ -38,7 +38,7 @@ const Home = ({ navigation }) => {
       ) : (
         <>
           <Subtitle variant="titleMedium">
-            Welcome back, {userData?.firstName}
+            Welcome back, {userData?.name}
           </Subtitle>
           <Title>{t("letsGetStarted")}</Title>
           <Button onPress={handleGetStarted} mode="contained">
