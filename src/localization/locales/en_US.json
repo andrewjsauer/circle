@@ -6,6 +6,9 @@
   "submit": "Submit",
   "username": "Username",
   "email": "E-mail address",
+  "firstName": "First name",
+  "letsGetStarted": "Ready to meditate?",
+  "fetchingYourData": "Fetching your data",
   "and": "and",
   "terms": {
     "line1": "By continuing you agree to Circle",
@@ -13,9 +16,9 @@
     "privacyPolicy": "Privacy Policy"
   },
   "slider": {
-    "one": "Water levels, trail conditions, animal sightings and more",
-    "two": "Report what you see and let the community know",
-    "three": "Rangers, local area managers, and hikers alike thank you"
+    "one": "Personalized meditation sessions tailored to the your preferences and needs",
+    "two": "Real-time feedback and guidance during meditation sessions",
+    "three": "Progress tracking and insights to help you improve over time"
   },
   "errors": {
     "invalidCode": "Invalid code",
@@ -24,7 +27,8 @@
     "phoneNumberInvalid": "Phone number is invalid",
     "emailAddressServer": "Oops! There was an issue with your email address",
     "displayNameServer": "Oops! There was an issue with your display name",
-    "displayNameTaken": "Oops! Looks like that username has already been taken"
+    "displayNameTaken": "Oops! Looks like that username has already been taken",
+    "firstNameServer": "Oops! Looks like there was an issue adding your name"
   },
   "auth": {
     "verificationCode": "Verification Code",
@@ -35,6 +39,7 @@
   "user": {
     "title": "Couple more questions to get you setup",
     "displayNameHelper": "2 to 20 characters with no spaces",
+    "firstNameHelper": "Used for personalized meditation sessions",
     "emailHelper": "Used for account and policy communication"
   }
 }

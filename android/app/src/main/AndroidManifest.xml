@@ -10,9 +10,8 @@
       android:icon="@mipmap/ic_launcher"
       android:roundIcon="@mipmap/ic_launcher_round"
       android:allowBackup="false"
-      android:theme="@style/AppTheme">
-      <!-- react-native-background-geolocation licence -->
-      <meta-data android:name="com.transistorsoft.locationmanager.license" android:value="cb5681c392e49c8092c6036ae32b46fc420e0321e6f0774b903abc798304f60b" />
+      android:theme="@style/AppTheme"
+      android:supportsRtl="true">
       <activity
         android:name=".MainActivity"
         android:label="@string/app_name"

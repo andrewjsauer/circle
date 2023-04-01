@@ -33,6 +33,20 @@ export const checkUsername = async (username) => {
   }
 };
 
+export const updateUser = (user, firstName) => {
+  try {
+    firestore().collection("users").doc(user.uid).set({
+      name: firstName,
+      id: user.uid,
+    });
+
+    return true;
+  } catch (error) {
+    console.log("Display name check failed", error);
+    return false;
+  }
+};
+
 export const updateUserProfile = async (user, username) => {
   try {
     await user.updateProfile({ displayName: username });

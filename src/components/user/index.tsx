@@ -6,8 +6,8 @@ import auth from "@react-native-firebase/auth";
 
 import { emailValidator, nameValidator } from "@utils";
 
-import { selectUser } from "@store/user/selectors";
-import { login } from "@store/user/slice";
+import { selectFirebaseUser } from "@store/user/selectors";
+import { login, updateUserData } from "@store/user/slice";
 
 import TextInput from "@components/text-input";
 import Button from "@components/button";
@@ -18,6 +18,7 @@ import {
   checkUsername,
   updateUserProfile,
   addUserProfile,
+  updateUser,
 } from "./utils";
 
 const User = () => {
@@ -25,14 +26,26 @@ const User = () => {
   const dispatch = useDispatch();
 
   const [isLoading, setIsLoading] = useState(false);
+
   const [email, setEmail] = useState({ value: "", error: "" });
   const [displayName, setDisplayName] = useState({ value: "", error: "" });
+  const [firstName, setFirstName] = useState({ value: "", error: "" });
 
-  const user = useSelector(selectUser);
+  const user = useSelector(selectFirebaseUser);
 
   const onSendPressed = async () => {
     const nameError = nameValidator(displayName.value);
     const emailError = emailValidator(email.value);
+    const firstNameError = nameValidator(firstName.value);
+
+    if (firstNameError) {
+      setFirstName((prevFirstName) => ({
+        ...prevFirstName,
+        error: firstNameError,
+      }));
+
+      return;
+    }
 
     if (nameError) {
       setDisplayName((prevDisplayName) => ({
@@ -91,8 +104,27 @@ const User = () => {
       return;
     }
 
-    const updatedUser = auth().currentUser;
-    dispatch(login(updatedUser));
+    const isFirstNameSuccessful = updateUser(user, firstName.value);
+    if (!isFirstNameSuccessful) {
+      setIsLoading(false);
+
+      const error = t("errors.firstNameServer");
+      setFirstName((prevEmail) => ({ ...prevEmail, error }));
+
+      return;
+    }
+
+    const userCurrent = auth().currentUser;
+    dispatch(login(userCurrent));
+
+    dispatch(
+      updateUserData({
+        displayName: displayName.value,
+        email: email.value,
+        firstName: firstName.value,
+        id: userCurrent?.uid ?? "",
+      }),
+    );
 
     setIsLoading(false);
   };
@@ -101,6 +133,15 @@ const User = () => {
     <Layout>
       <View>
         <Title>{t("user.title")}</Title>
+        <TextInput
+          errorText={firstName.error}
+          isError={!!firstName.error}
+          label={t("firstName")}
+          onChangeText={(text) => setFirstName({ value: text, error: "" })}
+          returnKeyType="next"
+          value={firstName.value}
+        />
+        <DetailMessage>{t("user.firstNameHelper")}</DetailMessage>
         <TextInput
           autoCapitalize="none"
           errorText={displayName.error}

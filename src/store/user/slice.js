@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const INITIAL = {
+  firebaseUser: null,
   userData: null,
 };
 
@@ -9,14 +10,17 @@ export const userSlice = createSlice({
   initialState: INITIAL,
   reducers: {
     login: (state, action) => {
-      state.userData = action.payload;
+      state.firebaseUser = action.payload;
     },
     logout: (state) => {
-      state.userData = null;
+      state.firebaseUser = null;
+    },
+    updateUserData: (state, action) => {
+      state.userData = action.payload;
     },
   },
 });
 
-export const { login, logout } = userSlice.actions;
+export const { updateUserData, login, logout } = userSlice.actions;
 
 export default userSlice.reducer;

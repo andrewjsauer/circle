@@ -6,7 +6,13 @@ import { Provider as PaperProvider } from "react-native-paper";
 import SplashScreen from "react-native-splash-screen";
 
 import { theme } from "@utils";
-import { HomeScreen, LoginScreen, RegisterScreen, Dashboard } from "@screens";
+import {
+  Dashboard,
+  HomeScreen,
+  LoginScreen,
+  QuestionaireScreen,
+  RegisterScreen,
+} from "@screens";
 import * as routes from "@constants/routes";
 
 import { useAppStateListener, useAuthStateListener } from "./hooks";
@@ -45,11 +51,18 @@ export default function App() {
               />
             </>
           ) : (
-            <Stack.Screen
-              options={{ headerShown: false }}
-              name={routes.DASHBOARD_SCREEN}
-              component={Dashboard}
-            />
+            <>
+              <Stack.Screen
+                options={{ headerShown: false }}
+                name={routes.DASHBOARD_SCREEN}
+                component={Dashboard}
+              />
+              <Stack.Screen
+                options={{ headerShown: false }}
+                name={routes.QUESTIONAIRE_SCREEN}
+                component={QuestionaireScreen}
+              />
+            </>
           )}
         </Stack.Navigator>
       </NavigationContainer>

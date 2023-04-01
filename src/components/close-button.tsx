@@ -4,11 +4,11 @@ import { getStatusBarHeight } from "react-native-status-bar-height";
 import Icon from "react-native-vector-icons/MaterialIcons";
 
 type Props = {
-  goBack: () => void;
+  onPress: () => void;
 };
 
-const BackButton = ({ goBack }: Props) => (
-  <TouchableOpacity onPress={goBack} style={styles.container}>
+const BackButton = ({ onPress }: Props) => (
+  <TouchableOpacity onPress={onPress} style={styles.container}>
     <Icon name="close" size={24} color="#000" />
   </TouchableOpacity>
 );
