@@ -5,16 +5,24 @@ import * as admin from "firebase-admin";
 import { defineSecret } from "firebase-functions/params";
 import textToSpeech from "@google-cloud/text-to-speech";
 
+import * as ffmpeg from "fluent-ffmpeg";
+import * as ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
+import * as ffprobeInstaller from "@ffprobe-installer/ffprobe";
+
+import { v4 as uuidv4 } from "uuid";
+
 import { Readable } from "stream";
 
 import { Configuration, OpenAIApi } from "openai";
 
-import { getVoice, generateTextForAudio, generateContent } from "./utils";
+import {
+  createSilenceBuffer,
+  getVoice,
+  generateTextForAudio,
+  generateContent,
+} from "./utils";
 
-admin.initializeApp({
-  credential: admin.credential.applicationDefault(),
-  storageBucket: "gs://circle-5fafc.appspot.com",
-});
+admin.initializeApp();
 
 const bucket = admin.storage().bucket();
 
@@ -57,19 +65,16 @@ export const createMeditation = functions
         temperature: 0.2,
       });
 
-      const gptContent = completion.data.choices[0].message.content.replace(
-        /\n/g,
-        "",
-      );
-      functions.logger.info(`GPT content: ${gptContent}`);
-
-      const textForAudio = await generateTextForAudio(
-        gptContent,
+      const textForAudio = generateTextForAudio(
+        completion.data.choices[0].message.content,
         functions,
-        data.time,
       );
 
-      functions.logger.info(`TextForAudio: ${textForAudio}`);
+      functions.logger.info(
+        `Text: ${textForAudio}. Is array: ${Array.isArray(
+          textForAudio,
+        )}. Length: ${textForAudio.length}`,
+      );
 
       const textToSpeechKeys = JSON.parse(process.env.TEXT_TO_SPEECH_KEY);
       const client = new textToSpeech.TextToSpeechClient({
@@ -79,39 +84,92 @@ export const createMeditation = functions
         },
       });
 
-      const ssmlVoice = getVoice(data.voice);
+      const voiceName = getVoice(data.voice);
+      const silenceBuffer = createSilenceBuffer(data.time);
 
-      const request: any = {
-        input: { ssml: textForAudio },
-        voice: {
-          languageCode: "en-US",
-          name: ssmlVoice,
-        },
-        audioConfig: {
-          audioEncoding: "MP3",
-        },
-      };
+      ffmpeg.setFfmpegPath(ffmpegInstaller.path);
+      ffmpeg.setFfprobePath(ffprobeInstaller.path);
 
-      functions.logger.info(`Request: ${JSON.stringify(request)}`);
+      const audioBuffers = [];
 
-      const [response] = await client.synthesizeSpeech(request);
+      for (const text of textForAudio) {
+        const request: any = {
+          input: { text: text },
+          voice: {
+            languageCode: "en-US",
+            name: voiceName,
+          },
+          audioConfig: {
+            audioEncoding: "LINEAR16",
+            sampleRateHertz: 16000,
+            speakingRate: 0.6,
+          },
+        };
 
-      functions.logger.info(`Response: ${JSON.stringify(response)}`);
+        const [response] = await client.synthesizeSpeech(request);
+        audioBuffers.push(response.audioContent);
 
-      const audioStream = new Readable();
-      audioStream.push(response.audioContent);
-      audioStream.push(null);
+        if (text !== textForAudio[textForAudio.length - 1]) {
+          audioBuffers.push(silenceBuffer);
+          functions.logger.info("Adding silence buffer");
+        }
+      }
+
+      const combinedAudioBuffer = Buffer.concat(audioBuffers);
+      const audioStream = Readable.from(combinedAudioBuffer);
 
       const file = bucket.file("output.mp3");
-      audioStream.pipe(
-        file.createWriteStream({
+
+      const uploadPromise = new Promise<string>((resolve, reject) => {
+        const writeStream = file.createWriteStream({
           metadata: {
             contentType: "audio/mpeg",
           },
-        }),
-      );
+        });
 
-      return "done";
+        ffmpeg(audioStream)
+          .inputFormat("s16le")
+          .inputOptions(["-ar 16000", "-ac 1"]) // Set input sample rate and channels
+          .audioCodec("libmp3lame")
+          .audioBitrate(128)
+          .outputOptions("-f mp3") // Set output format to MP3
+          .pipe(writeStream);
+
+        writeStream.on("finish", async () => {
+          functions.logger.info("Finished upload", file);
+
+          try {
+            const currentDate = new Date();
+            const expirationDate = new Date(
+              currentDate.getTime() + 24 * 60 * 60 * 1000,
+            );
+
+            const url = await file.getSignedUrl({
+              action: "read",
+              expires: expirationDate,
+            });
+
+            functions.logger.info("Signed url: " + JSON.stringify(url));
+
+            resolve(url[0]);
+          } catch (error) {
+            functions.logger.info("Error getting signed url: " + error);
+            reject(error);
+          }
+        });
+
+        writeStream.on("error", (error) => {
+          reject(error);
+        });
+      });
+
+      try {
+        const audioUrl = await uploadPromise;
+        return audioUrl;
+      } catch (error) {
+        functions.logger.info("Error uploading: " + error);
+        return error;
+      }
     } catch (error: any) {
       if (error.response) {
         functions.logger.info(`Error status ${error.response.status}`);

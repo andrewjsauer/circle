@@ -1,124 +1,86 @@
 /* eslint-disable max-len */
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const ssmlCheck = require("ssml-check");
 
 export const generateContent = (data) => {
-  const { focus, technique, goals, time } = data;
+  const { focus, technique, goals, time, experience } = data;
 
   const checkDataForNoPreference = (value) =>
     value === "no-preference" ? null : value;
 
-  const breakTime = (value) => {
-    switch (value) {
-      case "short":
-        return "60";
-      case "medium":
-        return "90";
-      case "long":
-        return "120";
-      case "very-long":
-        return "150";
-      default:
-        return "90";
-    }
-  };
-
   const lengthTime = (value) => {
     switch (value) {
       case "short":
-        return "2-5 minutes";
+        return "short in length";
       case "medium":
-        return "5-10 minutes";
+        return "medium in length";
       case "long":
-        return "10-20 minutes";
+        return "long in length";
       case "very-long":
-        return "20+ minutes";
+        return "very long in length";
       default:
-        return "5-10 minutes";
+        return "medium in length";
     }
   };
 
   const focusContent = checkDataForNoPreference(technique);
   const techniqueContent = checkDataForNoPreference(focus);
   const goalsContent = checkDataForNoPreference(goals);
-  const breakInSeconds = breakTime(time);
-  const lengthInMinutes = lengthTime(time);
+  const contentLength = lengthTime(time);
 
-  const content = `Create a meditation in Speech Synthesis Markup Language. Make meditation ${lengthInMinutes} long. Add 6 or more breaks of at least ${breakInSeconds} seconds, i.e. <break time="${breakInSeconds}s" />. Do not include a <voice /> tag.`;
-  const systemContent = `You are a professional meditation teacher or a meditation instructor. You are creating a meditation for a client who is looking for a ${
+  const content = `Create a meditation as an array of 3 strings. Make content ${contentLength}. Do not include notes or commentary, only the array.`;
+  const systemContent = `You are a professional meditation teacher and instructor. You are creating a meditation for a ${experience} client in meditation who is looking for a ${
     data.type
   } meditation with the following preferences:
     ${techniqueContent && `technique of ${techniqueContent},`}
     ${focusContent && `focus on ${focusContent},`}
-    ${goalsContent && `goal of ${goalsContent},`}
-    .`;
+    ${goalsContent && `goal of ${goalsContent}`}.`;
 
   return { content, systemContent };
 };
 
-const breakTimes = (value) => {
-  switch (value) {
-    case "short":
-      return "120s";
-    case "medium":
-      return "300s";
-    case "long":
-      return "720s";
-    case "very-long":
-      return "1200s";
-    default:
-      return "300s";
+const isValid = (arr) => {
+  if (arr.length >= 10) {
+    return false;
   }
+
+  return arr.every((item) => typeof item === "string");
 };
 
-export const generateTextForAudio = async (
-  content,
-  functions,
-  time,
-): Promise<any> => {
-  let textForAudio = content;
+export const generateTextForAudio = (content, functions): any => {
+  const arrayOfStrings = JSON.parse(content);
 
-  const doesContentStartWithXMLorSpeak = /^<(xml|speak)>/;
-  const isContentValid = doesContentStartWithXMLorSpeak.test(content);
+  if (!isValid(arrayOfStrings)) {
+    functions.logger.info(
+      "Invalid content returned from OpenAI!",
+      arrayOfStrings,
+    );
 
-  if (!isContentValid) {
-    const parseGPTCommentary = /<speak>[\s\S]*<\/speak>/;
-    const didParseGPTCommentary = content.match(parseGPTCommentary);
-
-    if (didParseGPTCommentary) textForAudio = didParseGPTCommentary[0];
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "Invalid content returned from OpenAI!",
+    );
   }
 
-  functions.logger.info(`Modified: ${textForAudio}`);
-
-  try {
-    const result = await ssmlCheck.verifyAndFix(textForAudio);
-
-    if (result?.fixedSSML) {
-      functions.logger.info(`SSML fixed: ${result.fixedSSML}`);
-      textForAudio = result.fixedSSML;
-    } else if (result.errors) {
-      functions.logger.info(`SSML Error: ${JSON.stringify(result.errors)}`);
-    } else {
-      functions.logger.info("SSML is clean");
-    }
-  } catch (error) {
-    functions.logger.info(`SSML Catch Error: ${error}`);
-  }
-
-  const breakTimeSeconds = breakTimes(time);
-
-  const regex = new RegExp("<break time=(['\"])(\\d+\\w*)\\1 />", "g");
-  textForAudio = textForAudio.replace(
-    regex,
-    () => `<break time="${breakTimeSeconds}" />`,
-  );
-
-  return textForAudio;
+  return arrayOfStrings;
 };
 
 export const getVoice = (voice) => {
   const isMale = voice === "male";
-  const ssmlVoice = isMale ? "en-US-Neural2-J" : "en-US-Neural2-F";
+  const voiceName = isMale ? "en-US-Studio-M" : "en-US-Studio-O";
 
-  return ssmlVoice;
+  return voiceName;
+};
+
+const SAMPLE_RATE_HERTZ = 16000;
+const CHANNELS = 2;
+const ONE_MINUTE_DURATION_SECONDS = 60;
+
+export const createSilenceBuffer = (minutesOfSilence) => {
+  const size =
+    minutesOfSilence *
+    ONE_MINUTE_DURATION_SECONDS *
+    SAMPLE_RATE_HERTZ *
+    CHANNELS *
+    2;
+
+  return Buffer.alloc(size, 0);
 };

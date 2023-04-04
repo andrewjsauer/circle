@@ -12,7 +12,7 @@ rnfbProvider.configure({
   },
   apple: {
     provider: __DEV__ ? "debug" : "appAttestWithDeviceCheckFallback",
-    debugToken: "A7ABD11A-E370-4AFE-A22D-C2B6831FD792",
+    debugToken: "E135E255-B6BD-4C8D-966E-1EF6450665D1",
   },
 });
 

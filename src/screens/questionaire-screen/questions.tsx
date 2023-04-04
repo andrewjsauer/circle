@@ -73,28 +73,26 @@ const techniques = {
 
 const areasOfFocus = {
   mindfulness: [
+    { id: "no-preference", value: "No preference" },
     { id: "breath", value: "Breath" },
     { id: "sensations", value: "Sensations" },
     { id: "thoughts", value: "Thoughts" },
     { id: "emotions", value: "Emotions" },
     { id: "external-environment", value: "External Environment" },
-    { id: "no-preference", value: "No preference" },
   ],
   spiritual: [
+    { id: "no-preference", value: "No preference" },
     { id: "heart", value: "Heart" },
     { id: "third-eye", value: "Third Eye" },
     { id: "crown", value: "Crown" },
     { id: "higher-power", value: "Higher Power" },
     { id: "sacred-symbol", value: "Sacred Symbol" },
-    { id: "no-preference", value: "No preference" },
   ],
   focused: [
-    { id: "breath", value: "Breath" },
+    { id: "no-preference", value: "No preference" },
     { id: "mantra", value: "Mantra" },
     { id: "object", value: "Object" },
-    { id: "chakra", value: "Chakra" },
     { id: "energy-centers", value: "Energy Centers" },
-    { id: "no-preference", value: "No preference" },
   ],
   movement: [
     { id: "no-preference", value: "No preference" },
@@ -122,24 +120,19 @@ const areasOfFocus = {
   ],
   "progressive-relaxation": [
     { id: "no-preference", value: "No preference" },
-    { id: "body-sensations", value: "Body Sensations" },
     { id: "breath", value: "Breath" },
-    { id: "muscles", value: "Muscles" },
-    { id: "tension", value: "Tension" },
     { id: "relaxation", value: "Relaxation" },
   ],
   "loving-kindness": [
     { id: "no-preference", value: "No preference" },
     { id: "breath", value: "Breath" },
     { id: "heart", value: "Heart" },
-    { id: "compassion", value: "Compassion" },
     { id: "love", value: "Love" },
     { id: "kindness", value: "Kindness" },
   ],
   visualization: [
     { id: "no-preference", value: "No preference" },
     { id: "breath", value: "Breath" },
-    { id: "visualization", value: "Visualization" },
     { id: "sensations", value: "Sensations" },
     { id: "emotions", value: "Emotions" },
     { id: "external-environment", value: "External Environment" },
@@ -320,20 +313,43 @@ const questions = (meditationId) => [
     id: "time",
     options: [
       {
-        id: "short",
+        id: "1",
         value: "Short (2-5 minutes)",
       },
       {
-        id: "medium",
+        id: "2",
         value: "Medium (5-10 minutes)",
       },
       {
-        id: "long",
+        id: "3",
         value: "Long (10-20 minutes)",
       },
       {
-        id: "very-long",
+        id: "5",
         value: "Very long (20+ minutes)",
+      },
+    ],
+  },
+  {
+    title:
+      "What level of meditation experience do you consider yourself to have? ",
+    id: "experience",
+    options: [
+      {
+        id: "beginner",
+        value: "Beginner",
+      },
+      {
+        id: "intermediate",
+        value: "Intermediate",
+      },
+      {
+        id: "advanced",
+        value: "Advanced",
+      },
+      {
+        id: "expert",
+        value: "Expert",
       },
     ],
   },

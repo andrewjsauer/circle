@@ -13,24 +13,24 @@ const User = () => {
   const handlePress = async () => {
     console.log("Test");
 
-    const test = await firestore().collection("test").get();
-    console.log(
-      "test",
-      test.docs.map((doc) => doc.data()),
-    );
+    // const test = await firestore().collection("test").get();
+    // console.log(
+    //   "test",
+    //   test.docs.map((doc) => doc.data()),
+    // );
 
-    // firestore()
-    //   .collection("users")
-    //   .add({
-    //     name: "Andrew TEST",
-    //     age: 30,
-    //   })
-    //   .then(() => {
-    //     console.log("User added!");
-    //   })
-    //   .catch((error) => {
-    //     console.log("Error adding user: ", error);
-    //   });
+    firestore()
+      .collection("test")
+      .add({
+        name: "Andrew TEST",
+        age: 30,
+      })
+      .then(() => {
+        console.log("User added!");
+      })
+      .catch((error) => {
+        console.log("Error adding user: ", error);
+      });
   };
 
   return (
