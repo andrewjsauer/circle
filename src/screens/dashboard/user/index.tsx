@@ -1,22 +1,42 @@
 import React, { memo } from "react";
 import { useTranslation } from "react-i18next";
-import { useSelector } from "react-redux";
-import { MD2Colors } from "react-native-paper";
-
-import { selectUserData } from "@store/user/selectors";
-import { Navigation } from "@types";
-import * as routes from "@constants/routes";
+import firestore from "@react-native-firebase/firestore";
 
 import backgroundImage from "@assets/background.png";
+import Button from "@components/button";
 
-import { LoadingSpinner, Subtitle, Title, Layout } from "./styles";
+import { Title, Layout } from "./styles";
 
 const User = () => {
   const { t } = useTranslation();
 
+  const handlePress = async () => {
+    console.log("Test");
+
+    const test = await firestore().collection("test").get();
+    console.log(
+      "test",
+      test.docs.map((doc) => doc.data()),
+    );
+
+    // firestore()
+    //   .collection("users")
+    //   .add({
+    //     name: "Andrew TEST",
+    //     age: 30,
+    //   })
+    //   .then(() => {
+    //     console.log("User added!");
+    //   })
+    //   .catch((error) => {
+    //     console.log("Error adding user: ", error);
+    //   });
+  };
+
   return (
     <Layout source={backgroundImage}>
       <Title>User</Title>
+      <Button onPress={handlePress}>Test</Button>
     </Layout>
   );
 };

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import functions from "@react-native-firebase/functions";
 
 import CloseButton from "@components/close-button";
 import * as routes from "@constants/routes";
@@ -23,6 +24,7 @@ interface Props {
 const QuestionaireScreen = ({ navigation }: Props) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({ type: null });
+  const [isUploading, setIsUploading] = useState(false);
 
   const questions = questionList(answers.type);
   const isLastQuestion = currentQuestionIndex === questions.length - 1;
@@ -34,9 +36,17 @@ const QuestionaireScreen = ({ navigation }: Props) => {
     }));
   };
 
-  const handleNextQuestion = () => {
+  const handleNextQuestion = async () => {
     if (isLastQuestion) {
+      setIsUploading(true);
       console.log("answers", answers);
+
+      const { data } = await functions().httpsCallable("createMeditation")({
+        ...answers,
+      });
+      console.log("data", data);
+
+      setIsUploading(false);
       return;
     }
 
@@ -65,7 +75,8 @@ const QuestionaireScreen = ({ navigation }: Props) => {
       </ProgressBarWrapper>
       <NextButton
         mode="contained"
-        disabled={!answers[id]}
+        disabled={!answers[id] || isUploading}
+        loading={isUploading}
         onPress={handleNextQuestion}
       >
         {isLastQuestion ? "Submit" : "Next"}

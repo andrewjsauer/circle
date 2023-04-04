@@ -1,10 +1,5 @@
 import "@react-native-firebase/app";
 import { firebase } from "@react-native-firebase/app-check";
-import firestore from "@react-native-firebase/firestore";
-
-if (__DEV__) {
-  firestore().useEmulator("localhost", 8080);
-}
 
 const rnfbProvider = firebase
   .appCheck()
@@ -17,7 +12,7 @@ rnfbProvider.configure({
   },
   apple: {
     provider: __DEV__ ? "debug" : "appAttestWithDeviceCheckFallback",
-    debugToken: "2C95B674-8856-4AB6-A879-CF8A4158B1F7",
+    debugToken: "A7ABD11A-E370-4AFE-A22D-C2B6831FD792",
   },
 });
 
