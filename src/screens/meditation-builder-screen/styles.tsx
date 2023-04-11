@@ -3,6 +3,8 @@ import {
   ProgressBar as ProgressBarPaper,
   Button,
   Text,
+  TextInput,
+  ActivityIndicator,
 } from "react-native-paper";
 
 export const Layout = styled.View`
@@ -10,7 +12,7 @@ export const Layout = styled.View`
   justify-content: center;
   align-items: center;
   height: 100%;
-  background-color: #f5f5f5;
+  background-color: ${(p) => p.color};
   padding: 0 18px;
 `;
 
@@ -20,7 +22,7 @@ export const QuestionTitle = styled(Text)`
   text-align: center;
 `;
 
-export const QuestionWrapper = styled.View`
+export const QuestionWrapper = styled.KeyboardAvoidingView`
   flex: 1;
   display: flex;
   justify-content: center;
@@ -37,8 +39,7 @@ export const ProgressBar = styled(ProgressBarPaper)`
 export const ProgressBarWrapper = styled.View`
   width: 100%;
   margin-top: 16px;
-  margin-bottom: 32px;
-  padding: 0 16px;
+  padding: 0 32px;
 `;
 
 export const ProgressText = styled(Text)`
@@ -50,6 +51,29 @@ export const ProgressText = styled(Text)`
 export const NextButton = styled(Button)`
   width: 100%;
   min-width: 200px;
-  margin-top: 8px;
-  padding: 2px 0;
+  margin-top: 60px;
+  margin-bottom: 12px;
+  padding: 4px 0;
+`;
+
+export const TextInputField = styled(TextInput)`
+  width: 100%;
+  margin-top: 20px;
+  height: 100px;
+`;
+
+export const LoadingSpinner = styled(ActivityIndicator)`
+  margin-bottom: 24px;
+`;
+
+export const CompleteTitle = styled(Text)`
+  font-size: 24px;
+  font-weight: 600;
+  text-align: center;
+`;
+
+export const CompleteSubTitle = styled(Text)`
+  font-size: 18px;
+  text-align: center;
+  margin-top: 12px;
 `;

@@ -17,8 +17,6 @@ export const useGetUserData = () => {
       const userRef = firestore().collection("users").doc(user.uid);
       const doc = await userRef.get();
 
-      console.log("TEST", doc);
-
       if (doc.exists) {
         dispatch(updateUserData(doc.data()));
       }

@@ -1,10 +1,6 @@
 /* eslint-disable max-len */
-
 export const generateContent = (data) => {
-  const { focus, technique, goals, time, experience } = data;
-
-  const checkDataForNoPreference = (value) =>
-    value === "no-preference" ? null : value;
+  const { technique, typeOfDay, time, experience, goal, type } = data;
 
   const lengthTime = (value) => {
     switch (value) {
@@ -21,46 +17,13 @@ export const generateContent = (data) => {
     }
   };
 
-  const focusContent = checkDataForNoPreference(technique);
-  const techniqueContent = checkDataForNoPreference(focus);
-  const goalsContent = checkDataForNoPreference(goals);
   const contentLength = lengthTime(time);
+  const day = typeOfDay === "no-preference" ? "" : typeOfDay;
 
-  const content = `Create a meditation as an array of 3 strings. Make content ${contentLength}. Do not include notes or commentary, only the array.`;
-  const systemContent = `You are a professional meditation teacher and instructor. You are creating a meditation for a ${experience} client in meditation who is looking for a ${
-    data.type
-  } meditation with the following preferences:
-    ${techniqueContent && `technique of ${techniqueContent},`}
-    ${focusContent && `focus on ${focusContent},`}
-    ${goalsContent && `goal of ${goalsContent}`}.`;
+  const systemContent = `You are a highly skilled ${type} meditation instructor with expertise in ${technique} techniques. Your task is to provide guidance on how to practice this meditation effectively.`;
+  const content = `Please create a ${contentLength}, guided ${day} ${type} meditation script for someone with ${experience} experience in meditation, focusing on ${goal}. Provide the script as an array of 3-4 strings, like this: "[string 1, string 2, string 3]". Do not include apologies, notes, or commentary, only return an array of strings.`;
 
   return { content, systemContent };
-};
-
-const isValid = (arr) => {
-  if (arr.length >= 10) {
-    return false;
-  }
-
-  return arr.every((item) => typeof item === "string");
-};
-
-export const generateTextForAudio = (content, functions): any => {
-  const arrayOfStrings = JSON.parse(content);
-
-  if (!isValid(arrayOfStrings)) {
-    functions.logger.info(
-      "Invalid content returned from OpenAI!",
-      arrayOfStrings,
-    );
-
-    throw new functions.https.HttpsError(
-      "invalid-argument",
-      "Invalid content returned from OpenAI!",
-    );
-  }
-
-  return arrayOfStrings;
 };
 
 export const getVoice = (voice) => {
@@ -74,13 +37,29 @@ const SAMPLE_RATE_HERTZ = 16000;
 const CHANNELS = 2;
 const ONE_MINUTE_DURATION_SECONDS = 60;
 
-export const createSilenceBuffer = (minutesOfSilence) => {
-  const size =
-    minutesOfSilence *
-    ONE_MINUTE_DURATION_SECONDS *
-    SAMPLE_RATE_HERTZ *
-    CHANNELS *
-    2;
+export const applyFadeInOut = (buffer, fadeDurationInMs = 20) => {
+  const fadeDurationInSeconds = fadeDurationInMs / 1000;
+  const fadeDurationInSamples = Math.floor(
+    fadeDurationInSeconds * SAMPLE_RATE_HERTZ * CHANNELS,
+  );
 
-  return Buffer.alloc(size, 0);
+  for (let i = 0; i < fadeDurationInSamples; i++) {
+    const fadeFactor = i / fadeDurationInSamples;
+    buffer.writeInt16LE(buffer.readInt16LE(i * 2) * fadeFactor, i * 2);
+    buffer.writeInt16LE(
+      buffer.readInt16LE(buffer.length - i * 2 - 2) * fadeFactor,
+      buffer.length - i * 2 - 2,
+    );
+  }
+
+  return buffer;
+};
+
+export const createSilenceBuffer = (maxMinutes, numberOfDivisions) => {
+  const maxSeconds = maxMinutes * ONE_MINUTE_DURATION_SECONDS;
+  const silenceDurationInSeconds = maxSeconds / numberOfDivisions;
+  const size = silenceDurationInSeconds * SAMPLE_RATE_HERTZ * CHANNELS * 2;
+
+  const buffer = Buffer.alloc(size, 0);
+  return applyFadeInOut(buffer);
 };

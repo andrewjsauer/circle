@@ -10,7 +10,8 @@ import {
   Dashboard,
   HomeScreen,
   LoginScreen,
-  QuestionaireScreen,
+  PlayerScreen,
+  MeditationBuilderScreen,
   RegisterScreen,
 } from "@screens";
 import * as routes from "@constants/routes";
@@ -59,8 +60,13 @@ export default function App() {
               />
               <Stack.Screen
                 options={{ headerShown: false }}
-                name={routes.QUESTIONAIRE_SCREEN}
-                component={QuestionaireScreen}
+                name={routes.MEDITATION_BUILDER_SCREEN}
+                component={MeditationBuilderScreen}
+              />
+              <Stack.Screen
+                options={{ headerShown: false }}
+                name={routes.PLAYER_SCREEN}
+                component={PlayerScreen}
               />
             </>
           )}

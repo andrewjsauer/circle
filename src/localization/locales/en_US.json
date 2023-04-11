@@ -7,7 +7,7 @@
   "username": "Username",
   "email": "E-mail address",
   "firstName": "First name",
-  "letsGetStarted": "Ready to meditate?",
+  "introTitle": "Select a meditation to get started",
   "fetchingYourData": "Fetching your data",
   "and": "and",
   "terms": {
@@ -16,9 +16,9 @@
     "privacyPolicy": "Privacy Policy"
   },
   "slider": {
-    "one": "Personalized meditation sessions tailored to the your preferences and needs",
-    "two": "Real-time feedback and guidance during meditation sessions",
-    "three": "Progress tracking and insights to help you improve over time"
+    "one": "AI-powered personalized meditation sessions tailored to the your preferences and needs",
+    "two": "Guidance during meditation sessions",
+    "three": "Tracking and insights to help you improve over time"
   },
   "errors": {
     "invalidCode": "Invalid code",

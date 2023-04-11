@@ -16,13 +16,16 @@ import { Readable } from "stream";
 import { Configuration, OpenAIApi } from "openai";
 
 import {
+  applyFadeInOut,
   createSilenceBuffer,
-  getVoice,
-  generateTextForAudio,
   generateContent,
+  getVoice,
 } from "./utils";
 
-admin.initializeApp();
+admin.initializeApp({
+  credential: admin.credential.applicationDefault(),
+  storageBucket: "gs://circle-5fafc.appspot.com",
+});
 
 const bucket = admin.storage().bucket();
 
@@ -46,35 +49,71 @@ export const createMeditation = functions
 
     try {
       const { content, systemContent } = generateContent(data);
+      let userContent = content;
 
       functions.logger.info(`Content: ${content}`);
       functions.logger.info(`System content: ${systemContent}`);
 
-      const completion: any = await openai.createChatCompletion({
-        model: "gpt-3.5-turbo",
-        messages: [
-          {
-            role: "system",
-            content: systemContent,
-          },
-          {
-            role: "assistant",
-            content: content,
-          },
-        ],
-        temperature: 0.2,
-      });
+      let isValid = false;
+      let isTryingAgain = false;
+      let meditation = null;
 
-      const textForAudio = generateTextForAudio(
-        completion.data.choices[0].message.content,
-        functions,
-      );
+      while (!isValid) {
+        try {
+          if (isTryingAgain) {
+            userContent = `You did not format the meditation as an array of strings. Try this prompt again: ${content}`;
+          }
 
-      functions.logger.info(
-        `Text: ${textForAudio}. Is array: ${Array.isArray(
-          textForAudio,
-        )}. Length: ${textForAudio.length}`,
-      );
+          const completion: any = await openai.createChatCompletion({
+            model: "gpt-3.5-turbo",
+            messages: [
+              {
+                role: "system",
+                content: systemContent,
+              },
+              {
+                role: "assistant",
+                content: userContent,
+              },
+            ],
+            temperature: 0.5,
+          });
+
+          functions.logger.info(
+            "OpenAI response",
+            completion.data.choices[0].message.content,
+          );
+
+          try {
+            const parsedJSON = JSON.parse(
+              completion.data.choices[0].message.content,
+            );
+
+            if (
+              Array.isArray(parsedJSON) &&
+              parsedJSON.every((item) => typeof item === "string")
+            ) {
+              meditation = parsedJSON;
+              isValid = true;
+            } else {
+              isTryingAgain = true;
+              functions.logger.info(
+                "Invalid response received, trying again...",
+              );
+            }
+          } catch (error) {
+            isTryingAgain = true;
+            functions.logger.info("JSON parsing error, trying again...");
+          }
+        } catch (e) {
+          functions.logger.info("Invalid something", e);
+
+          throw new functions.https.HttpsError(
+            "invalid-argument",
+            "Invalid content returned from OpenAI!",
+          );
+        }
+      }
 
       const textToSpeechKeys = JSON.parse(process.env.TEXT_TO_SPEECH_KEY);
       const client = new textToSpeech.TextToSpeechClient({
@@ -85,14 +124,14 @@ export const createMeditation = functions
       });
 
       const voiceName = getVoice(data.voice);
-      const silenceBuffer = createSilenceBuffer(data.time);
+      const silenceBuffer = createSilenceBuffer(data.time, meditation.length);
 
       ffmpeg.setFfmpegPath(ffmpegInstaller.path);
       ffmpeg.setFfprobePath(ffprobeInstaller.path);
 
       const audioBuffers = [];
 
-      for (const text of textForAudio) {
+      for (const text of meditation) {
         const request: any = {
           input: { text: text },
           voice: {
@@ -107,9 +146,10 @@ export const createMeditation = functions
         };
 
         const [response] = await client.synthesizeSpeech(request);
-        audioBuffers.push(response.audioContent);
+        const speechBuffer = applyFadeInOut(response.audioContent);
+        audioBuffers.push(speechBuffer);
 
-        if (text !== textForAudio[textForAudio.length - 1]) {
+        if (text !== meditation[meditation.length - 1]) {
           audioBuffers.push(silenceBuffer);
           functions.logger.info("Adding silence buffer");
         }
@@ -118,58 +158,61 @@ export const createMeditation = functions
       const combinedAudioBuffer = Buffer.concat(audioBuffers);
       const audioStream = Readable.from(combinedAudioBuffer);
 
-      const file = bucket.file("output.mp3");
+      const meditationId = uuidv4();
+      const file = bucket.file(`audio/${meditationId}.mp3`);
 
-      const uploadPromise = new Promise<string>((resolve, reject) => {
-        const writeStream = file.createWriteStream({
-          metadata: {
-            contentType: "audio/mpeg",
-          },
-        });
+      const uploadPromise = new Promise<void>((resolve, reject) => {
+        try {
+          const writeStream = file.createWriteStream({
+            metadata: {
+              contentType: "audio/mpeg",
+            },
+          });
 
-        ffmpeg(audioStream)
-          .inputFormat("s16le")
-          .inputOptions(["-ar 16000", "-ac 1"]) // Set input sample rate and channels
-          .audioCodec("libmp3lame")
-          .audioBitrate(128)
-          .outputOptions("-f mp3") // Set output format to MP3
-          .pipe(writeStream);
+          const ffmpegCommand = ffmpeg(audioStream)
+            .inputFormat("s16le")
+            .inputOptions(["-ar 16000", "-ac 1"])
+            .audioCodec("libmp3lame")
+            .audioBitrate(128)
+            .outputOptions("-f mp3");
 
-        writeStream.on("finish", async () => {
-          functions.logger.info("Finished upload", file);
+          functions.logger.info(
+            "FFmpeg command:",
+            ffmpegCommand._getArguments(),
+          );
 
-          try {
-            const currentDate = new Date();
-            const expirationDate = new Date(
-              currentDate.getTime() + 24 * 60 * 60 * 1000,
+          ffmpegCommand.pipe(writeStream).on("error", (error) => {
+            functions.logger.error("Error during FFmpeg processing:", error);
+          });
+
+          writeStream.on("finish", () => {
+            functions.logger.info("Finished upload");
+            resolve();
+          });
+
+          writeStream.on("error", (error) => {
+            functions.logger.error(
+              "Error during write stream processing:",
+              error,
             );
 
-            const url = await file.getSignedUrl({
-              action: "read",
-              expires: expirationDate,
-            });
-
-            functions.logger.info("Signed url: " + JSON.stringify(url));
-
-            resolve(url[0]);
-          } catch (error) {
-            functions.logger.info("Error getting signed url: " + error);
-            reject(error);
-          }
-        });
-
-        writeStream.on("error", (error) => {
-          reject(error);
-        });
+            reject(new Error(`Error during write stream: ${error.message}`));
+          });
+        } catch (error) {
+          functions.logger.error("Unhandled error:", error);
+          reject(new Error(`Unhandled error: ${error.message}`));
+        }
       });
 
       try {
-        const audioUrl = await uploadPromise;
-        return audioUrl;
+        await uploadPromise;
       } catch (error) {
-        functions.logger.info("Error uploading: " + error);
-        return error;
+        functions.logger.error("Error uploading audio:", error.message);
+        functions.logger.error("Stack trace:", error.stack);
+        throw error;
       }
+
+      return meditationId;
     } catch (error: any) {
       if (error.response) {
         functions.logger.info(`Error status ${error.response.status}`);

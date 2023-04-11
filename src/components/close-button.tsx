@@ -7,7 +7,7 @@ type Props = {
   onPress: () => void;
 };
 
-const BackButton = ({ onPress }: Props) => (
+const CloseButton = ({ onPress }: Props) => (
   <TouchableOpacity onPress={onPress} style={styles.container}>
     <Icon name="close" size={24} color="#000" />
   </TouchableOpacity>
@@ -17,9 +17,9 @@ const styles = StyleSheet.create({
   container: {
     position: "absolute",
     top: 14 + getStatusBarHeight(),
-    right: 14,
+    right: 20,
     zIndex: 2,
   },
 });
 
-export default memo(BackButton);
+export default memo(CloseButton);
