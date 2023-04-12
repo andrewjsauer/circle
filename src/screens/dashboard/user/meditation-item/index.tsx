@@ -34,8 +34,11 @@ const MeditationItem = ({ item, onPlay, onDelete, isDeleting }: any) => {
         <ItemView>
           <Row>
             <ItemText>Technique: {technique}</ItemText>
-            <ItemText>Voice: {item.voice}</ItemText>
+          </Row>
+          <Row>
             <ItemText>Time: {item.duration} minutes</ItemText>
+          </Row>
+          <Row>
             <ItemText>Goal: {item.goal}</ItemText>
           </Row>
           <ButtonRow>
@@ -63,26 +66,3 @@ const MeditationItem = ({ item, onPlay, onDelete, isDeleting }: any) => {
 };
 
 export default MeditationItem;
-
-// return (
-// <ItemCard
-//   onPress={() => onPress(item.id)}
-//   mode="elevated"
-//   backgroundColor={item.backgroundColor}
-// >
-// <ItemView>
-//   <Header>
-//     <ItemTitle>
-//       {typeOfDay} {item.type} Meditation
-//     </ItemTitle>
-//     <CreatedText>{createdAt}</CreatedText>
-//   </Header>
-//   <Row>
-//     <ItemText>Technique: {technique}</ItemText>
-//     <ItemText>Voice: {item.voice}</ItemText>
-//     <ItemText>Time: {item.duration} minutes</ItemText>
-//     <ItemText>Goal: {item.goal}</ItemText>
-//   </Row>
-// </ItemView>
-//   </ItemCard>
-// );

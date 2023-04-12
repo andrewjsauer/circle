@@ -12,6 +12,7 @@ export const Layout = styled.ImageBackground`
 
 export const Container = styled.SafeAreaView`
   display: flex;
+  height: 100%;
   padding: 0 24px;
 `;
 

@@ -61,6 +61,7 @@ const useSetupPlayer = (meditationId, meditationUrl) => {
           url: meditationUrl,
           title: "Meditation",
           artist: "Circle",
+          // create a new artwork object for this track
         });
       })();
     }

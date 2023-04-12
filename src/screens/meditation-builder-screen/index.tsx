@@ -107,9 +107,9 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
     content = (
       <>
         <LoadingSpinner size="large" />
-        <CompleteTitle>Creating your meditation...</CompleteTitle>
+        <CompleteTitle>Creating your personalized meditation...</CompleteTitle>
         <CompleteSubTitle>
-          This can take up to a minute or so. We will start your meditation once
+          Please allow up to a minute or so. We will start your meditation once
           it&apos;s ready.
         </CompleteSubTitle>
       </>

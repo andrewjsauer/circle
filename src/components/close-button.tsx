@@ -9,7 +9,7 @@ type Props = {
 
 const CloseButton = ({ onPress }: Props) => (
   <TouchableOpacity onPress={onPress} style={styles.container}>
-    <Icon name="close" size={24} color="#000" />
+    <Icon name="close" size={28} color="#000" />
   </TouchableOpacity>
 );
 
@@ -19,6 +19,7 @@ const styles = StyleSheet.create({
     top: 14 + getStatusBarHeight(),
     right: 20,
     zIndex: 2,
+    padding: 6,
   },
 });
 

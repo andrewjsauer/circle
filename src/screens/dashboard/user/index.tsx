@@ -101,6 +101,10 @@ const User = ({ navigation }) => {
   };
 
   const name = userData?.name ? `, ${userData?.name}` : "!";
+  const subtitle =
+    meditations.length === 0
+      ? "You do not have any saved meditations yet."
+      : `Your saved meditations (${meditations.length})`;
   return (
     <Layout source={backgroundImage}>
       {isLoading ? (
@@ -111,11 +115,7 @@ const User = ({ navigation }) => {
       ) : (
         <Container>
           <Title>Hi{name}</Title>
-          <Subtitle>
-            {meditations.length === 0
-              ? "You do not have any saved meditations yet."
-              : `Your saved meditations (${meditations.length})`}
-          </Subtitle>
+          <Subtitle>{subtitle}</Subtitle>
           <MeditationList>
             <List.AccordionGroup>
               {meditations.map((meditation) => (
