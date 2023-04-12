@@ -47,7 +47,7 @@ const IntroSlider = () => {
   };
 
   useEffect(() => {
-    timeout.current = setInterval(() => tick(), 2000);
+    timeout.current = setInterval(() => tick(), 2500);
     return () => timeout.current && clearInterval(timeout.current);
   }, []);
 

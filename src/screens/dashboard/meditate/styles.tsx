@@ -51,6 +51,7 @@ export const Card = styled(TouchableRipple)`
   height: 120px;
   color: #fff;
   background-color: ${(p) => p.color};
+  position: relative;
 `;
 
 export const CardText = styled(Text)`
@@ -58,6 +59,18 @@ export const CardText = styled(Text)`
   font-size: 18px;
   font-weight: 500;
   padding: 14px;
+  width: 100%;
+`;
+
+export const IconView = styled.View`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  bottom: 0;
+  left: 0;
 `;
 
 export const Subtitle = styled(Text)``;

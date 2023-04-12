@@ -10,9 +10,7 @@ import * as ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
 import * as ffprobeInstaller from "@ffprobe-installer/ffprobe";
 
 import { v4 as uuidv4 } from "uuid";
-
 import { Readable } from "stream";
-
 import { Configuration, OpenAIApi } from "openai";
 
 import {
@@ -55,14 +53,25 @@ export const createMeditation = functions
       functions.logger.info(`System content: ${systemContent}`);
 
       let isValid = false;
+      let numOfRetries = 0;
       let isTryingAgain = false;
       let meditation = null;
 
       while (!isValid) {
         try {
-          if (isTryingAgain) {
-            userContent = `You did not format the meditation as an array of strings. Try this prompt again: ${content}`;
+          if (numOfRetries > 3) {
+            functions.logger.info("Too many retries, throwing error");
+            throw new functions.https.HttpsError(
+              "invalid-argument",
+              "Invalid response received from OpenAI",
+            );
           }
+
+          if (isTryingAgain) {
+            userContent = `Just format the meditation as an array of strings with no commentary or apology. Try this prompt again: ${content}`;
+          }
+
+          functions.logger.info(`User content: ${userContent}`);
 
           const completion: any = await openai.createChatCompletion({
             model: "gpt-3.5-turbo",
@@ -96,12 +105,14 @@ export const createMeditation = functions
               meditation = parsedJSON;
               isValid = true;
             } else {
+              numOfRetries += 1;
               isTryingAgain = true;
               functions.logger.info(
                 "Invalid response received, trying again...",
               );
             }
           } catch (error) {
+            numOfRetries += 1;
             isTryingAgain = true;
             functions.logger.info("JSON parsing error, trying again...");
           }

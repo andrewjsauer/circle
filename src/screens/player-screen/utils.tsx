@@ -25,7 +25,7 @@ export const onMeditationSave = async (
   } else {
     metadata = {
       ...meditationData,
-      duration,
+      duration: duration === 0 ? 1 : duration,
       id: meditationId,
     };
   }

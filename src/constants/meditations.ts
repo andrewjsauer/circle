@@ -23,92 +23,53 @@ export const meditationTypes = [
   {
     id: "mindfulness",
     value: "Mindfulness",
-    color: "#547A9C",
-    backgroundColor: "rgba(84, 122, 156, 0.3)",
-    placeholder:
-      "e.g. cultivate awareness of the present moment and reduce stress.",
   },
   {
     id: "visualization",
     value: "Visualization",
-    color: "#5C85A9",
-    backgroundColor: "rgba(92, 133, 169, 0.3)",
-    placeholder: "e.g. enhance focus and clarity through mental imagery.",
-  },
-  {
-    id: "focused",
-    value: "Focused",
-    color: "#6490B6",
-    backgroundColor: "rgba(100, 144, 182, 0.3)",
-    placeholder:
-      "e.g. improve concentration and mental focus on a specific object or thought.",
-  },
-  {
-    id: "movement",
-    value: "Movement",
-    color: "#6C9BC3",
-    backgroundColor: "rgba(108, 155, 195, 0.3)",
-    placeholder:
-      "e.g. achieve mindfulness through physical activities like yoga or walking.",
   },
   {
     id: "mantra",
     value: "Mantra",
-    color: "#7496D0",
-    backgroundColor: "rgba(116, 166, 208, 0.3)",
-    placeholder:
-      "e.g. experience inner peace and transformation through the repetition of sacred sounds",
+  },
+  {
+    id: "focused",
+    value: "Focused",
+  },
+  {
+    id: "movement",
+    value: "Movement",
   },
   {
     id: "transcendental",
     value: "Transcendental",
-    color: "#7CA1DD",
-    backgroundColor: "rgba(124, 177, 221, 0.3)",
-    placeholder:
-      "e.g. access deep states of rest and expanded awareness through the use of a personal mantra",
   },
   {
     id: "progressive-relaxation",
     value: "Progressive Relaxation",
-    color: "#84ACEA",
-    backgroundColor: "rgba(132, 188, 234, 0.3)",
-    placeholder:
-      "e.g. release tension and promote relaxation by progressively tensing and relaxing muscle groups.",
   },
   {
     id: "loving-kindness",
     value: "Loving-Kindness",
-    color: "#8CB7F7",
-    backgroundColor: "rgba(140, 199, 247, 0.3)",
-    placeholder:
-      "e.g. develop compassion and love for oneself and others through the practice of sending well-wishes",
   },
   {
     id: "spiritual",
     value: "Spiritual",
-    color: "#94C2FF",
-    backgroundColor: "rgba(148, 210, 255, 0.3)",
-    placeholder:
-      "e.g. connect with a higher power or greater sense of purpose in life.",
   },
 ];
 
 export const times = [
   {
-    id: "2",
+    id: "1",
     value: "Short (2-5 minutes)",
   },
   {
-    id: "4",
+    id: "3",
     value: "Medium (5-10 minutes)",
   },
   {
-    id: "6",
+    id: "5",
     value: "Long (10-20 minutes)",
-  },
-  {
-    id: "8",
-    value: "Very long (20+ minutes)",
   },
 ];
 
@@ -170,6 +131,90 @@ export const techniques = {
     { id: "journeying", value: "Journeying" },
   ],
 };
+export const questions = [
+  {
+    title: "What's your goal for this meditation?",
+    description:
+      "This is used to personalize your experience when creating your meditation.",
+    id: "goal",
+    type: "text",
+  },
+  {
+    title: "What is your preferred duration?",
+    id: "time",
+    options: times,
+  },
+];
+
+export const customQuestions = (meditationId) => [
+  {
+    title: "Select a meditation type",
+    id: "meditationType",
+    options: meditationTypes,
+  },
+  {
+    title:
+      "Are there any specific meditation techniques you would like to explore?",
+    options: techniques[meditationId],
+    id: "technique",
+  },
+  {
+    title: "What is your goal for this meditation session?",
+    id: "goal",
+    type: "text",
+  },
+  {
+    title: "What is your preferred session duration?",
+    id: "time",
+    options: times,
+  },
+];
+
+export const homeScreenOptions = [
+  {
+    id: "mindfulness",
+    value: "Mindfulness",
+    technique: "mindful-breathing",
+    color: "#5588BB",
+    backgroundColor: "rgba(116, 166, 208, 0.3)",
+    placeholder:
+      "e.g. this can be anything from cultivate awareness to reduce stress, etc.",
+  },
+  {
+    id: "visualization",
+    value: "Visualization",
+    technique: "guided-imagery",
+    color: "#4477AA",
+    backgroundColor: "rgba(92, 133, 169, 0.3)",
+    placeholder:
+      "e.g. this can be anything from enhance focus to visualize success and good fortune.",
+  },
+  {
+    id: "mantra",
+    value: "Mantra",
+    technique: "repetition",
+    color: "#336699",
+    backgroundColor: "rgba(116, 166, 208, 0.3)",
+    placeholder:
+      "e.g. this can be anything from inner peace to self-compassion, success, etc.",
+  },
+  {
+    id: "movement",
+    value: "Movement",
+    technique: "walking",
+    color: "#225588",
+    backgroundColor: "rgba(108, 155, 195, 0.3)",
+    placeholder:
+      "e.g. this can be anything from achieve mindfulness through physical activities like yoga or walking.",
+  },
+  {
+    id: "custom",
+    value: "Custom",
+    color: "#114477",
+    backgroundColor: "rgba(100, 144, 182, 0.3)",
+    placeholder: "e.g. create your own meditation session.",
+  },
+];
 
 // Need to download and upload audio files to Firebase Storage. Will need duration of each duration we offer
 // {
@@ -194,63 +239,3 @@ export const techniques = {
 //     },
 //   ],
 // },
-
-export const questions = (meditationId) => [
-  {
-    title: "What is your primary goal for this meditation session?",
-    id: "goal",
-    type: "text",
-  },
-  {
-    title:
-      "Are there any specific meditation techniques you would like to explore?",
-    options: techniques[meditationId],
-    id: "technique",
-  },
-  {
-    title: "Do you want to incorporate the type of day into your session?",
-    id: "typeOfDay",
-    options: typeOfDays,
-  },
-  {
-    title: "Do you prefer a male or female voice?",
-    id: "voice",
-    options: [
-      {
-        id: "male",
-        value: "Male",
-      },
-      {
-        id: "female",
-        value: "Female",
-      },
-    ],
-  },
-  {
-    title: "What is your preferred session duration?",
-    id: "time",
-    options: times,
-  },
-  {
-    title: "How familiar are you with meditation?",
-    id: "experience",
-    options: [
-      {
-        id: "beginner",
-        value: "Beginner",
-      },
-      {
-        id: "intermediate",
-        value: "Intermediate",
-      },
-      {
-        id: "advanced",
-        value: "Advanced",
-      },
-      {
-        id: "expert",
-        value: "Expert",
-      },
-    ],
-  },
-];

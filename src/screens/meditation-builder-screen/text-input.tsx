@@ -1,19 +1,17 @@
 import React from "react";
 import { HelperText } from "react-native-paper";
 
-import { QuestionTitle, TextInputField } from "./styles";
+import { TextInputField } from "./styles";
 
 const TextInput = ({
   placeholder,
   errorMessage,
   onChangeText,
-  title,
   value,
   color,
 }) => {
   return (
     <>
-      <QuestionTitle>{title}</QuestionTitle>
       <TextInputField
         placeholder={placeholder}
         value={value}
@@ -26,7 +24,6 @@ const TextInput = ({
         numberOfLines={4}
         autoFocus
       />
-
       <HelperText type="error" visible={!!errorMessage}>
         {errorMessage}
       </HelperText>

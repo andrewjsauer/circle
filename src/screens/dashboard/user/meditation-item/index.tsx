@@ -20,6 +20,7 @@ const MeditationItem = ({ item, onPlay, onDelete, isDeleting }: any) => {
   const technique = techniques[meditationId].filter(
     (tech) => tech.id === item.technique,
   )[0].value;
+
   const typeOfDay = typeOfDays.filter((day) => day.id === item.typeOfDay)[0]
     .value;
   const createdAt = convertTimestamp(item.createdAt);

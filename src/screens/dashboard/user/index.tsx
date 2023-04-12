@@ -1,13 +1,17 @@
 import React, { useState, useEffect, memo } from "react";
 import { useSelector } from "react-redux";
-import { List } from "react-native-paper";
+import { List, RadioButton } from "react-native-paper";
 
 import firestore from "@react-native-firebase/firestore";
 import auth from "@react-native-firebase/auth";
 import storage from "@react-native-firebase/storage";
 
 import backgroundImage from "@assets/background.png";
-import { selectUserId, selectUserData } from "@store/user/selectors";
+import {
+  selectUserId,
+  selectUserData,
+  selectIsUserLoggedIn,
+} from "@store/user/selectors";
 import * as routes from "@constants/routes";
 
 import Button from "@components/button";
@@ -26,12 +30,13 @@ import {
 } from "./styles";
 
 const User = ({ navigation }) => {
+  const userId: string = useSelector(selectUserId);
+  const userData = useSelector(selectUserData);
+  const isUserLoggedIn = useSelector(selectIsUserLoggedIn);
+
   const [meditations, setMeditations] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-
-  const userId: string = useSelector(selectUserId);
-  const userData = useSelector(selectUserData);
 
   useEffect(() => {
     const subscriber = firestore()
@@ -39,6 +44,7 @@ const User = ({ navigation }) => {
       .doc(userId)
       .collection("meditations")
       .onSnapshot((querySnapshot) => {
+        if (!isUserLoggedIn) return;
         setIsLoading(true);
 
         const meditationData = [];
@@ -100,6 +106,16 @@ const User = ({ navigation }) => {
     setIsDeleting(false);
   };
 
+  const handleVoicePreferenceChange = async (value) => {
+    try {
+      await firestore().collection("users").doc(userId).update({
+        voice: value,
+      });
+    } catch (error) {
+      console.log("error", error);
+    }
+  };
+
   const name = userData?.name ? `, ${userData?.name}` : "!";
   const subtitle =
     meditations.length === 0
@@ -115,6 +131,14 @@ const User = ({ navigation }) => {
       ) : (
         <Container>
           <Title>Hi{name}</Title>
+          <Subtitle>Your audio voice preference</Subtitle>
+          <RadioButton.Group
+            onValueChange={handleVoicePreferenceChange}
+            value={userData?.voice || "female"}
+          >
+            <RadioButton.Item label="Female" value="female" />
+            <RadioButton.Item label="Male" value="male" />
+          </RadioButton.Group>
           <Subtitle>{subtitle}</Subtitle>
           <MeditationList>
             <List.AccordionGroup>

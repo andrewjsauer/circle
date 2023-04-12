@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 export const generateContent = (data) => {
-  const { technique, typeOfDay, time, experience, goal, type } = data;
+  const { technique, typeOfDay, time, goal, type } = data;
 
   const lengthTime = (value) => {
     switch (value) {
@@ -21,7 +21,7 @@ export const generateContent = (data) => {
   const day = typeOfDay === "no-preference" ? "" : typeOfDay;
 
   const systemContent = `You are a highly skilled ${type} meditation instructor with expertise in ${technique} techniques. Your task is to provide guidance on how to practice this meditation effectively.`;
-  const content = `Please create a ${contentLength}, guided ${day} ${type} meditation script for someone with ${experience} experience in meditation, focusing on ${goal}. Provide the script as an array of 3-4 strings, like this: "[string 1, string 2, string 3]". Do not include apologies, notes, or commentary, only return an array of strings.`;
+  const content = `Please create a ${contentLength}, guided ${day} ${type} meditation script, focusing on ${goal}. Provide the script as an array of 3-4 strings, like this: "[string 1, string 2, string 3]". Do not include apologies, notes, or commentary, only return an array of strings.`;
 
   return { content, systemContent };
 };
@@ -36,6 +36,8 @@ export const getVoice = (voice) => {
 const SAMPLE_RATE_HERTZ = 16000;
 const CHANNELS = 2;
 const ONE_MINUTE_DURATION_SECONDS = 60;
+
+// ADD
 
 export const applyFadeInOut = (buffer, fadeDurationInMs = 20) => {
   const fadeDurationInSeconds = fadeDurationInMs / 1000;

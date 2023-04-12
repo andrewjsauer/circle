@@ -22,6 +22,14 @@ export const QuestionTitle = styled(Text)`
   text-align: center;
 `;
 
+export const Header = styled.View`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+`;
+
 export const QuestionWrapper = styled.KeyboardAvoidingView`
   flex: 1;
   display: flex;
@@ -48,11 +56,24 @@ export const ProgressText = styled(Text)`
   margin-top: 12px;
 `;
 
+export const ButtonWrapper = styled.View`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 60px;
+  margin-bottom: 12px;
+`;
+
 export const NextButton = styled(Button)`
   width: 100%;
   min-width: 200px;
-  margin-top: 60px;
-  margin-bottom: 12px;
+  padding: 4px 0;
+`;
+
+export const PreviousButton = styled(Button)`
+  width: 100%;
+  min-width: 100px;
   padding: 4px 0;
 `;
 
@@ -76,4 +97,12 @@ export const CompleteSubTitle = styled(Text)`
   font-size: 18px;
   text-align: center;
   margin-top: 12px;
+`;
+
+export const ErrorButton = styled(Button)`
+  width: 100%;
+  min-width: 200px;
+  margin-top: 60px;
+  margin-bottom: 12px;
+  padding: 4px 0;
 `;

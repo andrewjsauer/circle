@@ -1,9 +1,10 @@
 import React, { memo } from "react";
 import { useTranslation } from "react-i18next";
+import Icon from "react-native-vector-icons/Entypo";
 
 import backgroundImage from "@assets/background.png";
 import * as routes from "@constants/routes";
-import { meditationTypes } from "@constants/meditations";
+import { homeScreenOptions } from "@constants/meditations";
 
 import {
   Card,
@@ -14,6 +15,7 @@ import {
   Layout,
   CardText,
   CardTouchable,
+  IconView,
 } from "./styles";
 
 const Meditate = ({ navigation }: any) => {
@@ -29,10 +31,17 @@ const Meditate = ({ navigation }: any) => {
         <Title>{t("introTitle")}</Title>
         <CardWrapper>
           <CardContainer>
-            {meditationTypes.map((type) => (
+            {homeScreenOptions.map((type) => (
               <CardTouchable key={type.id}>
                 <Card onPress={() => handleGetStarted(type)} color={type.color}>
-                  <CardText variant="titleMedium">{type.value}</CardText>
+                  <>
+                    <CardText variant="titleMedium">{type.value}</CardText>
+                    {type.id === "custom" && (
+                      <IconView>
+                        <Icon name="plus" size={34} color="#fff" />
+                      </IconView>
+                    )}
+                  </>
                 </Card>
               </CardTouchable>
             ))}
