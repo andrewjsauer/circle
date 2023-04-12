@@ -94,17 +94,18 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
       setUploadError(null);
 
       const typeOfDay = getTimeOfDay();
-      const meditationValue =
-        answers.meditationType &&
-        meditationTypes.filter((type) => type.id === answers.meditationType)[0]
-          .value;
+      const meditationValue = answers.meditationType
+        ? meditationTypes.filter(
+            (type) => type.id === answers.meditationType,
+          )[0].value
+        : null;
 
       const payload = {
         ...answers,
         ...meditationType,
         typeOfDay,
         voice: userData?.voice || "female",
-        type: meditationType?.value || meditationValue,
+        type: meditationValue || meditationType?.value,
         createdAt: firestore.FieldValue.serverTimestamp(),
       };
 
