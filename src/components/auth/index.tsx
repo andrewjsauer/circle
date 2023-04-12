@@ -1,9 +1,11 @@
-import React, { useRef, useEffect, memo } from "react";
-import { useSelector } from "react-redux";
+import React, { useRef, memo } from "react";
 import { View } from "react-native";
+import { useDispatch } from "react-redux";
+
 import PhoneInput from "react-native-phone-number-input";
 import auth from "@react-native-firebase/auth";
 import { useTranslation } from "react-i18next";
+import { login } from "@store/user/slice";
 
 import * as routes from "@constants/routes";
 import { Navigation } from "@types";
@@ -38,6 +40,8 @@ const Auth = ({
   onPhoneNumber,
   phoneNumber,
 }: Props) => {
+  const dispatch = useDispatch();
+
   const { t } = useTranslation();
   const phoneInputRef = useRef<PhoneInput>(null);
 
@@ -58,6 +62,9 @@ const Auth = ({
     } catch (error) {
       onCode({ ...phoneNumber, error: t("errors.invalidCode") });
     }
+
+    const user = auth().currentUser;
+    dispatch(login(user));
 
     onIsLoading(false);
   };

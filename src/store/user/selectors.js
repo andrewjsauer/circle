@@ -1,25 +1,27 @@
 import { createSelector } from "reselect";
 
-export const selectUser = (state) => state.user.userData;
+export const selectFirebaseUser = (state) => state.user.firebaseUser;
+export const selectUserData = (state) => state.user.userData;
+export const selectIsFetching = (state) => state.user.isFetching;
 
 export const selectIsUserLoggedIn = createSelector(
-  selectUser,
+  selectFirebaseUser,
   (user) => !!user,
 );
 
 export const selectIsUserAlreadyRegistered = createSelector(
-  selectUser,
+  selectFirebaseUser,
   (user) => !!user?.displayName && !!user?.email,
 );
 
 export const selectUserId = createSelector(
   selectIsUserLoggedIn,
-  selectUser,
-  (isUserLoggedIn, user) => isUserLoggedIn && user.uid,
+  selectFirebaseUser,
+  (isUserLoggedIn, user) => (isUserLoggedIn ? user.uid : null),
 );
 
 export const selectUserDisplayName = createSelector(
   selectIsUserLoggedIn,
-  selectUser,
+  selectFirebaseUser,
   (isUserLoggedIn, user) => isUserLoggedIn && user.displayName,
 );

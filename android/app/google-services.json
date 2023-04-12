@@ -1,40 +1,40 @@
 {
   "project_info": {
-    "project_number": "1027843161239",
-    "project_id": "switchback-80e93",
-    "storage_bucket": "switchback-80e93.appspot.com"
+    "project_number": "130972503197",
+    "project_id": "circle-5fafc",
+    "storage_bucket": "circle-5fafc.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1027843161239:android:388589c13f5ddb38cb7dd2",
+        "mobilesdk_app_id": "1:130972503197:android:f7fbc386f8045d926a5874",
         "android_client_info": {
-          "package_name": "com.sauerapple.switchbacks"
+          "package_name": "com.sauerapple.circle"
         }
       },
       "oauth_client": [
         {
-          "client_id": "1027843161239-rjeg1b7ps97oiv3rjkdkdaqi7nlvqoma.apps.googleusercontent.com",
+          "client_id": "130972503197-okpm3vq27ur749a99bn07696m8k58g9o.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyARJM3UvKKjX8NaiiTgUNsAgtYYLp_OEvs"
+          "current_key": "AIzaSyCd6DnR5-V1jWsh7A_XZx_rgCyMwtENmYQ"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "1027843161239-rjeg1b7ps97oiv3rjkdkdaqi7nlvqoma.apps.googleusercontent.com",
+              "client_id": "130972503197-okpm3vq27ur749a99bn07696m8k58g9o.apps.googleusercontent.com",
               "client_type": 3
             },
             {
-              "client_id": "1027843161239-qm3db4rkbggb7as6j24qpp93n344u7bq.apps.googleusercontent.com",
+              "client_id": "130972503197-3bfkh5tnmvdhk5dgb67kojd89410ggar.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.sauerapple.switchbacks"
+                "bundle_id": "com.sauerapple.circle"
               }
             }
           ]

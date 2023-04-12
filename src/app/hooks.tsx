@@ -4,8 +4,6 @@ import { useDispatch, useSelector } from "react-redux";
 
 import auth from "@react-native-firebase/auth";
 
-import { IS_IOS } from "@utils";
-
 import { login } from "@store/user/slice";
 import { updateAppVisibility } from "@store/app/slice";
 
@@ -19,12 +17,15 @@ export function useAuthStateListener() {
   const isUserLoggedIn = useSelector(selectIsUserLoggedIn);
   const isUserAlreadyRegistered = useSelector(selectIsUserAlreadyRegistered);
 
-  function onAuthStateChanged(user) {
+  function onAuthStateChanged(user, isRegistered) {
+    if (!isRegistered) return;
     dispatch(login(user));
   }
 
   useEffect(() => {
-    const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
+    const subscriber = auth().onAuthStateChanged((user) =>
+      onAuthStateChanged(user, isUserAlreadyRegistered),
+    );
     return subscriber;
   }, []);
 
