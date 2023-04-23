@@ -1,4 +1,6 @@
 import * as React from "react";
+
+import { StatusBar } from "react-native";
 import {
   NativeSafeAreaViewProps,
   SafeAreaView,
@@ -14,7 +16,13 @@ type Props = React.PropsWithChildren<NativeSafeAreaViewProps>;
  */
 
 function AppSafeAreaView({ children, ...props }: Props) {
-  return <SafeAreaView {...props}>{children}</SafeAreaView>;
+  return (
+    <SafeAreaView {...props}>
+      <StatusBar animated barStyle="dark-content">
+        {children}
+      </StatusBar>
+    </SafeAreaView>
+  );
 }
 
 export default AppSafeAreaView;

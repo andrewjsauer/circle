@@ -3,13 +3,7 @@ import { HelperText } from "react-native-paper";
 
 import { TextInputField } from "./styles";
 
-const TextInput = ({
-  placeholder,
-  errorMessage,
-  onChangeText,
-  value,
-  color,
-}) => {
+const TextInput = ({ placeholder, errorMessage, onChangeText, value }: any) => {
   return (
     <>
       <TextInputField
@@ -17,11 +11,8 @@ const TextInput = ({
         value={value}
         onChangeText={onChangeText}
         mode="outlined"
-        outlineColor={color}
-        activeOutlineColor={color}
         multiline
         error={!!errorMessage}
-        numberOfLines={4}
         autoFocus
       />
       <HelperText type="error" visible={!!errorMessage}>

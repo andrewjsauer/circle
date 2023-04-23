@@ -9,16 +9,16 @@ import firestore from "@react-native-firebase/firestore";
 import CloseButton from "@components/close-button";
 import * as routes from "@constants/routes";
 import {
-  questions,
-  customQuestions,
-  meditationTypes,
+  personalizedQuestions,
+  microHitQuestions,
 } from "@constants/meditations";
+
 import { Navigation } from "@types";
 import { selectUserData } from "@store/user/selectors";
+import { getTimeOfDay } from "@utils";
 
 import Dropdown from "./dropdown";
 import TextInput from "./text-input";
-import { getTimeOfDay } from "./utils";
 
 import {
   PreviousButton,
@@ -56,16 +56,16 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
 
   const userData = useSelector(selectUserData);
 
-  const questionsList =
-    meditationType.id === "custom"
-      ? customQuestions(answers?.meditationType)
-      : questions;
+  const questionsList: any =
+    meditationType.id === "personalized"
+      ? personalizedQuestions
+      : microHitQuestions;
 
   const isLastQuestion = currentQuestionIndex === questionsList.length - 1;
   const isFirstQuestion = currentQuestionIndex === 0;
 
-  const handleOptionSelect = (questionId, optionValue) => {
-    if (questionId === "goal") {
+  const handleOptionSelect = (questionId, optionValue, isTextInput = false) => {
+    if (isTextInput) {
       const maxWords = 120;
       const filter = new Filter();
 
@@ -93,19 +93,11 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
       setIsUploading(true);
       setUploadError(null);
 
-      const typeOfDay = getTimeOfDay();
-      const meditationValue = answers.meditationType
-        ? meditationTypes.filter(
-            (type) => type.id === answers.meditationType,
-          )[0].value
-        : null;
-
       const payload = {
         ...answers,
         ...meditationType,
-        typeOfDay,
+        typeOfDay: getTimeOfDay(),
         voice: userData?.voice || "female",
-        type: meditationValue || meditationType?.value,
         createdAt: firestore.FieldValue.serverTimestamp(),
       };
 
@@ -150,11 +142,14 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
       <>
         <CompleteTitle>Oops!</CompleteTitle>
         <CompleteSubTitle>{uploadError}</CompleteSubTitle>
-        <ErrorButton mode="contained">Restart</ErrorButton>
+        <ErrorButton onPress={handleNextQuestion} mode="contained">
+          Restart
+        </ErrorButton>
       </>
     );
   } else {
-    const { title, options, id, type } = questionsList[currentQuestionIndex];
+    const { title, options, placeholder, id, type } =
+      questionsList[currentQuestionIndex];
 
     content = (
       <>
@@ -174,22 +169,19 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
             />
           ) : (
             <TextInput
-              color={meditationType.backgroundColor}
               errorMessage={textInputError}
-              onChangeText={(text) => handleOptionSelect(id, text)}
-              placeholder={meditationType.placeholder}
-              value={answers[id]}
+              onChangeText={(text) => handleOptionSelect(id, text, true)}
+              placeholder={placeholder}
+              value={answers[id] || ""}
             />
           )}
           <ProgressBarWrapper>
             <ProgressBar
               progress={(currentQuestionIndex + 1) / questionsList.length}
               color={meditationType.color}
-              style={{ backgroundColor: meditationType.backgroundColor }}
             />
             <ProgressText>
               {currentQuestionIndex + 1} of {questionsList.length} questions
-              answered
             </ProgressText>
           </ProgressBarWrapper>
           <ButtonWrapper>

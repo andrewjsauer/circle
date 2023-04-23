@@ -7,11 +7,12 @@ import SplashScreen from "react-native-splash-screen";
 
 import { theme } from "@utils";
 import {
+  Browser,
   Dashboard,
   HomeScreen,
   LoginScreen,
-  PlayerScreen,
   MeditationBuilderScreen,
+  PlayerScreen,
   RegisterScreen,
 } from "@screens";
 import * as routes from "@constants/routes";
@@ -70,6 +71,11 @@ export default function App() {
               />
             </>
           )}
+          <Stack.Screen
+            options={{ headerTitle: "", headerBackTitle: "Go Back" }}
+            name={routes.BROWSER_SCREEN}
+            component={Browser}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     </PaperProvider>

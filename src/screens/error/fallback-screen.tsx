@@ -8,7 +8,7 @@ interface Props {
 function FallbackScreen({ resetState }: Props) {
   return (
     <View style={styles.container}>
-      <Text>Fallback screen</Text>
+      <Text>Whoops! Looks like there was an error</Text>
       <Button title="Go home" onPress={resetState} />
     </View>
   );

@@ -5,8 +5,9 @@ import { BottomNavigation, MD2Colors } from "react-native-paper";
 import { Navigation } from "@types";
 import backgroundImage from "@assets/background.png";
 
-import Meditate from "./meditate";
+import Home from "./home";
 import User from "./user";
+import Meditations from "./meditations";
 import { useGetUserData } from "./hooks";
 import { Layout, LoadingSpinner, Subtitle } from "./styles";
 
@@ -14,17 +15,26 @@ type Props = {
   navigation: Navigation;
 };
 
-const HomeScreen = (navigation) => <Meditate navigation={navigation} />;
+const HomeScreen = (navigation) => <Home navigation={navigation} />;
+const MeditationsScreen = (navigation) => (
+  <Meditations navigation={navigation} />
+);
 const UserScreen = (navigation) => <User navigation={navigation} />;
 
 const Dashboard = ({ navigation }: Props) => {
   const { t } = useTranslation();
 
-  const [index, setIndex] = useState(0);
+  const [index, setIndex] = useState(1);
   const [routes] = useState([
     {
+      key: "saved",
+      title: "Saved",
+      focusedIcon: "download-box",
+      unfocusedIcon: "download-box-outline",
+    },
+    {
       key: "home",
-      title: "Meditate",
+      title: "Home",
       focusedIcon: "heart",
       unfocusedIcon: "heart-outline",
     },
@@ -40,6 +50,7 @@ const Dashboard = ({ navigation }: Props) => {
 
   const renderScene = BottomNavigation.SceneMap({
     home: () => HomeScreen(navigation),
+    saved: () => MeditationsScreen(navigation),
     user: () => UserScreen(navigation),
   });
 
