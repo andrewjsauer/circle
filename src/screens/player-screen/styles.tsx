@@ -64,7 +64,8 @@ export const AudioView = styled.View`
   display: flex;
   flex-direction: row;
   align-items: center;
-  padding: 18px 38px;
+  padding: 24px 38px;
   border-radius: 32px;
   background-color: #b3cce5;
+  min-width: 220px;
 `;

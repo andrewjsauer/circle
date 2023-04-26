@@ -9,18 +9,21 @@ import { IS_IOS } from "@utils";
 const getSlides = (t) => [
   {
     key: 1,
-    text: t("slider.one"),
-    image: require("../assets/logo.png"),
+    title: t("slider.one.title"),
+    description: t("slider.one.description"),
+    image: require("../assets/slider-1.png"),
   },
   {
     key: 2,
-    text: t("slider.two"),
-    image: require("../assets/logo.png"),
+    title: t("slider.two.title"),
+    description: t("slider.two.description"),
+    image: require("../assets/slider-2.png"),
   },
   {
     key: 3,
-    text: t("slider.three"),
-    image: require("../assets/logo.png"),
+    title: t("slider.three.title"),
+    description: t("slider.three.description"),
+    image: require("../assets/slider-3.png"),
   },
 ];
 
@@ -47,7 +50,7 @@ const IntroSlider = () => {
   };
 
   useEffect(() => {
-    timeout.current = setInterval(() => tick(), 2000);
+    timeout.current = setInterval(() => tick(), 3000);
     return () => timeout.current && clearInterval(timeout.current);
   }, []);
 
@@ -55,8 +58,11 @@ const IntroSlider = () => {
     return (
       <View style={styles.slide}>
         <Image source={item.image} style={styles.image} />
-        <Text variant="headlineSmall" style={styles.text}>
-          {item.text}
+        <Text variant="headlineMedium" style={styles.title}>
+          {item.title}
+        </Text>
+        <Text variant="titleMedium" style={styles.description}>
+          {item.description}
         </Text>
       </View>
     );
@@ -82,13 +88,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   image: {
-    width: 150,
-    height: 150,
     marginVertical: 32,
   },
-  text: {
+  title: {
     textAlign: "center",
     fontWeight: IS_IOS ? "600" : "bold",
+  },
+  description: {
+    textAlign: "center",
+    marginTop: 16,
+    color: "rgba(0, 0, 0, 0.54)",
   },
 });
 export default IntroSlider;

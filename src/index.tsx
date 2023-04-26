@@ -5,7 +5,7 @@ import { PersistGate } from "redux-persist/integration/react";
 import "@localization/i18n";
 
 import { AppSafeAreaProvider } from "@components/safe-area";
-import { MainErrorBoundary } from "@screens/error";
+import MainErrorBoundary from "@screens/error/main-error-boundary";
 
 // import withStorybookUI from "./utils/storybook/withStorybook";
 import "./utils/ignore-logs";

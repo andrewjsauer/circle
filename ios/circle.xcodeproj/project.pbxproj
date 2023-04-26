@@ -541,6 +541,7 @@
 				CODE_SIGN_ENTITLEMENTS = circle/circle.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = WY4WJ378L9;
+				EXCLUDED_ARCHS = "";
 				INFOPLIST_FILE = circle/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = circle;
 				LD_RUNPATH_SEARCH_PATHS = (

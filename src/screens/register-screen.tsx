@@ -8,7 +8,7 @@ import {
 
 import Background from "@components/background";
 import Auth from "@components/auth";
-import User from "@components/user";
+import Registration from "@components/registration";
 
 import * as routes from "@constants/routes";
 import { Navigation } from "@types";
@@ -39,7 +39,7 @@ const RegisterScreen = ({ navigation }: Props) => {
   return (
     <Background>
       {isUserSettings ? (
-        <User />
+        <Registration />
       ) : (
         <Auth
           code={code}

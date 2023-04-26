@@ -10,9 +10,14 @@ import { selectFirebaseUser } from "@store/user/selectors";
 import { login, updateUserData } from "@store/user/slice";
 
 import TextInput from "@components/text-input";
-import Button from "@components/button";
 
-import { DetailMessage, Title, Layout } from "./styles";
+import {
+  SubmitButton,
+  DetailMessage,
+  Title,
+  Layout,
+  ScrollView,
+} from "./styles";
 import {
   updateUserEmail,
   checkUsername,
@@ -21,7 +26,7 @@ import {
   updateUser,
 } from "./utils";
 
-const User = () => {
+const Registration = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
@@ -130,52 +135,54 @@ const User = () => {
   };
 
   return (
-    <Layout>
-      <View>
-        <Title>{t("user.title")}</Title>
-        <TextInput
-          errorText={firstName.error}
-          isError={!!firstName.error}
-          label={t("firstName")}
-          onChangeText={(text) => setFirstName({ value: text, error: "" })}
-          returnKeyType="next"
-          value={firstName.value}
-        />
-        <DetailMessage>{t("user.firstNameHelper")}</DetailMessage>
-        <TextInput
-          autoCapitalize="none"
-          errorText={displayName.error}
-          isError={!!displayName.error}
-          label={t("username")}
-          onChangeText={(text) => setDisplayName({ value: text, error: "" })}
-          returnKeyType="next"
-          value={displayName.value}
-        />
-        <DetailMessage>{t("user.displayNameHelper")}</DetailMessage>
-        <TextInput
-          autoCapitalize="none"
-          autoCompleteType="email"
-          errorText={email.error}
-          isError={!!email.error}
-          keyboardType="email-address"
-          label={t("email")}
-          onChangeText={(text) => setEmail({ value: text, error: "" })}
-          returnKeyType="done"
-          textContentType="emailAddress"
-          value={email.value}
-        />
-        <DetailMessage>{t("user.emailHelper")}</DetailMessage>
-      </View>
-      <Button
-        loading={isLoading}
-        disabled={isLoading}
-        mode="contained"
-        onPress={onSendPressed}
-      >
-        {t("submit")}
-      </Button>
-    </Layout>
+    <ScrollView>
+      <Layout>
+        <View>
+          <Title>{t("user.title")}</Title>
+          <TextInput
+            errorText={firstName.error}
+            isError={!!firstName.error}
+            label={t("firstName")}
+            onChangeText={(text) => setFirstName({ value: text, error: "" })}
+            returnKeyType="next"
+            value={firstName.value}
+          />
+          <DetailMessage>{t("user.firstNameHelper")}</DetailMessage>
+          <TextInput
+            autoCapitalize="none"
+            errorText={displayName.error}
+            isError={!!displayName.error}
+            label={t("username")}
+            onChangeText={(text) => setDisplayName({ value: text, error: "" })}
+            returnKeyType="next"
+            value={displayName.value}
+          />
+          <DetailMessage>{t("user.displayNameHelper")}</DetailMessage>
+          <TextInput
+            autoCapitalize="none"
+            autoCompleteType="email"
+            errorText={email.error}
+            isError={!!email.error}
+            keyboardType="email-address"
+            label={t("email")}
+            onChangeText={(text) => setEmail({ value: text, error: "" })}
+            returnKeyType="done"
+            textContentType="emailAddress"
+            value={email.value}
+          />
+          <DetailMessage>{t("user.emailHelper")}</DetailMessage>
+        </View>
+        <SubmitButton
+          loading={isLoading}
+          disabled={isLoading}
+          mode="contained"
+          onPress={onSendPressed}
+        >
+          {t("submit")}
+        </SubmitButton>
+      </Layout>
+    </ScrollView>
   );
 };
 
-export default User;
+export default Registration;

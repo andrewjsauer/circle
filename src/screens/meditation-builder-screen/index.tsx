@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { TouchableWithoutFeedback, Keyboard, Platform } from "react-native";
+import { useSelector } from "react-redux";
 import Filter from "bad-words";
 
 import functions from "@react-native-firebase/functions";
@@ -7,47 +8,61 @@ import firestore from "@react-native-firebase/firestore";
 
 import CloseButton from "@components/close-button";
 import * as routes from "@constants/routes";
-import { questions as questionsList } from "@constants/meditations";
+
 import { Navigation } from "@types";
+import { selectUserData } from "@store/user/selectors";
+import { getTimeOfDay } from "@utils";
 
 import Dropdown from "./dropdown";
-
 import TextInput from "./text-input";
+import BreathingCircle from "./breathing-circle";
+
 import {
+  PreviousButton,
+  ButtonWrapper,
+  ErrorButton,
   QuestionWrapper,
   CompleteTitle,
   CompleteSubTitle,
-  LoadingSpinner,
   ProgressBarWrapper,
   Layout,
   ProgressText,
   NextButton,
   ProgressBar,
+  QuestionTitle,
+  BreathingCircleView,
 } from "./styles";
 
 interface Props {
   navigation: Navigation;
   route: {
     params: {
-      meditationType: any;
+      meditation: any;
+      name: string;
     };
   };
 }
 
 const MeditationBuilderScreen = ({ navigation, route }: Props) => {
-  const { meditationType } = route.params;
+  const { meditation, name } = route.params;
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadError, setUploadError] = useState(null);
+  const [uploadMessage, setUploadMessage] = useState("");
+  const [uploadError, setUploadError]: any = useState(null);
   const [textInputError, setTextInputError] = useState("");
 
-  const questions = questionsList(meditationType.id);
-  const isLastQuestion = currentQuestionIndex === questions.length - 1;
+  const userData = useSelector(selectUserData);
 
-  const handleOptionSelect = (questionId, optionValue) => {
-    if (questionId === "goal") {
+  const { questions } = meditation;
+  const questionsLength = questions.length;
+
+  const isLastQuestion = currentQuestionIndex === questionsLength - 1;
+  const isFirstQuestion = currentQuestionIndex === 0;
+
+  const handleOptionSelect = (questionId, optionValue, isTextInput = false) => {
+    if (isTextInput) {
       const maxWords = 120;
       const filter = new Filter();
 
@@ -66,35 +81,67 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
     }));
   };
 
+  const handlePreviousQuestion = () => {
+    setCurrentQuestionIndex(currentQuestionIndex - 1);
+  };
+
   const handleNextQuestion = async () => {
     if (isLastQuestion) {
+      setUploadMessage("Creating your personalized meditation...");
       setIsUploading(true);
       setUploadError(null);
 
+      const prompt = meditation.prompt({ ...answers, user_name: name });
+
       const payload = {
         ...answers,
-        ...meditationType,
-        type: meditationType.value,
+        ...meditation,
+        prompt,
+        typeOfDay: getTimeOfDay(),
+        voice: userData?.voice || "female",
         createdAt: firestore.FieldValue.serverTimestamp(),
       };
 
-      const { data: meditationId } = await functions().httpsCallable(
-        "createMeditation",
-      )(payload);
+      delete payload.questions;
 
-      if (typeof meditationId === "string") {
-        navigation.navigate(routes.PLAYER_SCREEN, {
-          data: { ...payload, ...meditationType },
-          meditationId,
-          isSavedMeditation: false,
-        });
-      } else {
+      const { data: contentData } = await functions().httpsCallable(
+        "getContent",
+      )({ prompt });
+
+      const { content, error: contentError } = contentData;
+
+      if (contentError) {
         setUploadError(
-          "Looks like there was an error creating your meditation. Please try again later.",
+          `Looks like there was an error creating your meditation. Please try again later. Error: ${error}`,
         );
+        setIsUploading(false);
+        return;
       }
 
+      setUploadMessage("Almost done! Converting your meditation into audio...");
+
+      const { data: audioData } = await functions().httpsCallable("getAudio")({
+        content,
+      });
+
+      const { audioId, error: audioError } = audioData;
+
+      if (audioError) {
+        setUploadError(
+          `Looks like there was an error turning your meditation into audio. Please try again later. Error: ${audioError}`,
+        );
+        setIsUploading(false);
+        return;
+      }
+
+      navigation.navigate(routes.PLAYER_SCREEN, {
+        data: payload,
+        audioId,
+        isSavedMeditation: false,
+      });
+
       setIsUploading(false);
+      setUploadMessage("");
       return;
     }
 
@@ -106,12 +153,14 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
   if (isUploading) {
     content = (
       <>
-        <LoadingSpinner size="large" />
-        <CompleteTitle>Creating your personalized meditation...</CompleteTitle>
+        <CompleteTitle>{uploadMessage}</CompleteTitle>
         <CompleteSubTitle>
-          Please allow up to a minute or so. We will start your meditation once
-          it&apos;s ready.
+          Please allow up to a minute or so. In the meantime, let&apos;s take a
+          few deep breaths.
         </CompleteSubTitle>
+        <BreathingCircleView>
+          <BreathingCircle />
+        </BreathingCircleView>
       </>
     );
   } else if (uploadError) {
@@ -119,11 +168,14 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
       <>
         <CompleteTitle>Oops!</CompleteTitle>
         <CompleteSubTitle>{uploadError}</CompleteSubTitle>
-        <ErrorButton mode="contained">Restart</ErrorButton>
+        <ErrorButton onPress={handleNextQuestion} mode="contained">
+          Restart
+        </ErrorButton>
       </>
     );
   } else {
-    const { title, options, id, type } = questions[currentQuestionIndex];
+    const { title, options, placeholder, id, type } =
+      questions[currentQuestionIndex];
 
     content = (
       <>
@@ -133,41 +185,46 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
         <QuestionWrapper
           behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
+          <QuestionTitle>{title}</QuestionTitle>
+
           {type !== "text" ? (
             <Dropdown
-              options={options}
               onSelect={(option) => handleOptionSelect(id, option)}
+              options={options}
               selectedOption={answers[id]}
-              title={title}
             />
           ) : (
             <TextInput
-              color={meditationType.backgroundColor}
               errorMessage={textInputError}
-              onChangeText={(text) => handleOptionSelect(id, text)}
-              placeholder={meditationType.placeholder}
-              title={title}
-              value={answers[id]}
+              onChangeText={(text) => handleOptionSelect(id, text, true)}
+              placeholder={placeholder}
+              value={answers[id] || ""}
             />
           )}
           <ProgressBarWrapper>
             <ProgressBar
-              progress={(currentQuestionIndex + 1) / questions.length}
-              color={meditationType.color}
-              style={{ backgroundColor: meditationType.backgroundColor }}
+              progress={(currentQuestionIndex + 1) / questionsLength}
+              color={meditation.color}
             />
             <ProgressText>
-              {currentQuestionIndex + 1} of {questions.length} questions
-              answered
+              {currentQuestionIndex + 1} of {questionsLength} questions
             </ProgressText>
           </ProgressBarWrapper>
-          <NextButton
-            mode="contained"
-            disabled={!answers[id] || !!textInputError}
-            onPress={handleNextQuestion}
-          >
-            {isLastQuestion ? "Submit" : "Next"}
-          </NextButton>
+          <ButtonWrapper>
+            <PreviousButton
+              onPress={handlePreviousQuestion}
+              disabled={isFirstQuestion}
+            >
+              Previous
+            </PreviousButton>
+            <NextButton
+              mode="contained"
+              disabled={!answers[id] || !!textInputError}
+              onPress={handleNextQuestion}
+            >
+              {isLastQuestion ? "Submit" : "Next"}
+            </NextButton>
+          </ButtonWrapper>
         </QuestionWrapper>
       </>
     );
@@ -175,7 +232,7 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <Layout color={meditationType.backgroundColor}>{content}</Layout>
+      <Layout>{content}</Layout>
     </TouchableWithoutFeedback>
   );
 };

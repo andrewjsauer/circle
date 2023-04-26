@@ -1,7 +1,10 @@
 import styled from "styled-components/native";
 import { Text } from "react-native-paper";
 
+import Button from "@components/button";
 import { theme } from "@utils";
+
+export const ScrollView = styled.ScrollView``;
 
 export const Layout = styled.View`
   display: flex;
@@ -24,4 +27,8 @@ export const Message = styled(Text)`
 export const DetailMessage = styled(Text)`
   font-size: 14px;
   color: ${theme.colors.backdrop};
+`;
+
+export const SubmitButton = styled(Button)`
+  margin: 28px 0;
 `;

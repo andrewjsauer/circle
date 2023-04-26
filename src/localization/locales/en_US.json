@@ -11,14 +11,23 @@
   "fetchingYourData": "Fetching your data",
   "and": "and",
   "terms": {
-    "line1": "By continuing you agree to Circle",
+    "line1": "By continuing you agree to Circle's",
     "termsOfService": "Terms of Service",
     "privacyPolicy": "Privacy Policy"
   },
   "slider": {
-    "one": "AI-powered personalized meditation sessions tailored to the your preferences and needs",
-    "two": "Guidance during meditation sessions",
-    "three": "Tracking and insights to help you improve over time"
+    "one": {
+      "title": "Customized Meditations",
+      "description": "Receive a guided meditation recording that's been crafted just for you."
+    },
+    "two": {
+      "title": "Wide Range of Topics",
+      "description": "Whether you're looking for support in aligning with abundance, facing fear, releasing trauma, or even mindfulness."
+    },
+    "three": {
+      "title": "Subscription Plans",
+      "description": "Choose from one-time purchases, 3-month subscriptions, or monthly packs."
+    }
   },
   "errors": {
     "invalidCode": "Invalid code",

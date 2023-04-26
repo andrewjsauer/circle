@@ -45,11 +45,11 @@ const HomeScreen = ({ navigation }: Props) => {
         <View style={styles.terms}>
           <Text>{t("terms.line1")}</Text>
           <View style={styles.termButtons}>
-            <ButtonURL url="https://docs.google.com/document/d/1MG1Tm3Ku7cLgS04aqKJZejACQFXWJiIiVuo5wrI5EVU/edit">
+            <ButtonURL url="https://docs.google.com/document/d/1aa7YQbnCb1cSFt6vcAurYPqZZ5T-fio8rX0HjqtSLJ8/edit?usp=sharing">
               {t("terms.termsOfService")}
             </ButtonURL>
             <Text> {t("and")} </Text>
-            <ButtonURL url="https://docs.google.com/document/d/1j-Cn_cMNpm9XSbjS3ieooBsVhZ_yGP9kZMFbztRpQKA/edit">
+            <ButtonURL url="https://docs.google.com/document/d/1-gu2BCXOrRabnHfSorQg46H0Hblt6ZP_aHs4gwfIqXw/edit?usp=sharing">
               {t("terms.privacyPolicy")}
             </ButtonURL>
             <Text>.</Text>
