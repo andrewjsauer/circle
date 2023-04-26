@@ -1,34 +1,7 @@
 /* eslint-disable max-len */
-export const generateContent = (data) => {
-  const { technique, typeOfDay, time, goal, type } = data;
-
-  const lengthTime = (value) => {
-    switch (value) {
-      case "short":
-        return "short in length";
-      case "medium":
-        return "medium in length";
-      case "long":
-        return "long in length";
-      case "very-long":
-        return "very long in length";
-      default:
-        return "medium in length";
-    }
-  };
-
-  const contentLength = lengthTime(time);
-  const day = typeOfDay === "no-preference" ? "" : typeOfDay;
-
-  const systemContent = `You are a highly skilled ${type} meditation instructor with expertise in ${technique} techniques. Your task is to provide guidance on how to practice this meditation effectively.`;
-  const content = `Please create a ${contentLength}, guided ${day} ${type} meditation script, focusing on ${goal}. Provide the script as an array of 3-4 strings, like this: "[string 1, string 2, string 3]". Do not include apologies, notes, or commentary, only return an array of strings.`;
-
-  return { content, systemContent };
-};
-
 export const getVoice = (voice) => {
   const isMale = voice === "male";
-  const voiceName = isMale ? "en-US-Studio-M" : "en-US-Studio-O";
+  const voiceName = isMale ? "Matthew" : "Joanna";
 
   return voiceName;
 };
@@ -64,4 +37,13 @@ export const createSilenceBuffer = (maxMinutes, numberOfDivisions) => {
 
   const buffer = Buffer.alloc(size, 0);
   return applyFadeInOut(buffer);
+};
+
+export const streamToBuffer = (stream) => {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    stream.on("data", (chunk) => chunks.push(chunk));
+    stream.on("error", reject);
+    stream.on("end", () => resolve(Buffer.concat(chunks)));
+  });
 };

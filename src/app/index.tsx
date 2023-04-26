@@ -8,6 +8,7 @@ import SplashScreen from "react-native-splash-screen";
 import { theme } from "@utils";
 import {
   Browser,
+  CoursesScreen,
   Dashboard,
   HomeScreen,
   LoginScreen,
@@ -63,6 +64,11 @@ export default function App() {
                 options={{ headerShown: false }}
                 name={routes.MEDITATION_BUILDER_SCREEN}
                 component={MeditationBuilderScreen}
+              />
+              <Stack.Screen
+                options={{ headerShown: false }}
+                name={routes.COURSES_SCREEN}
+                component={CoursesScreen}
               />
               <Stack.Screen
                 options={{ headerShown: false }}

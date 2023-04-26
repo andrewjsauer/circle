@@ -21,7 +21,7 @@ import {
   NoMeditationsText,
 } from "./styles";
 
-const User = ({ navigation }) => {
+const Meditations = ({ navigation }) => {
   const userId: string = useSelector(selectUserId);
   const isUserLoggedIn = useSelector(selectIsUserLoggedIn);
 
@@ -61,9 +61,9 @@ const User = ({ navigation }) => {
     return () => subscriber();
   }, []);
 
-  const handlePlay = (meditationId) => {
+  const handlePlay = (audioId) => {
     navigation.navigate(routes.PLAYER_SCREEN, {
-      meditationId,
+      audioId,
       isSavedMeditation: true,
     });
   };
@@ -98,9 +98,7 @@ const User = ({ navigation }) => {
         </LoadingContainer>
       ) : (
         <Container>
-          <Subtitle>
-            Your saved meditations ({meditations.length || 0})
-          </Subtitle>
+          <Subtitle>Saved meditations ({meditations.length || 0})</Subtitle>
           {!meditations.length ? (
             <LoadingContainer>
               <NoMeditationsText>
@@ -128,4 +126,4 @@ const User = ({ navigation }) => {
   );
 };
 
-export default memo(User);
+export default memo(Meditations);

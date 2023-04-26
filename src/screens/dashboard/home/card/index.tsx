@@ -4,6 +4,7 @@ import Icon from "react-native-vector-icons/Entypo";
 import {
   Content,
   Image,
+  ImageWrapper,
   Wrapper,
   TextWrapper,
   Title,
@@ -13,7 +14,7 @@ import {
   Time,
 } from "./styles";
 
-const Card = ({ onPress, time, title, description, color, image }: any) => {
+const Card = ({ onPress, time, title, description, image }: any) => {
   return (
     <Wrapper onPress={onPress}>
       <Content>
@@ -27,7 +28,9 @@ const Card = ({ onPress, time, title, description, color, image }: any) => {
             <Time>{time}</Time>
           </TimeWrapper>
         </TextWrapper>
-        <Image source={image} />
+        <ImageWrapper>
+          <Image source={image} />
+        </ImageWrapper>
       </Content>
     </Wrapper>
   );

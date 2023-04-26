@@ -1,19 +1,6 @@
 import styled from "styled-components/native";
 import { Text, TouchableRipple } from "react-native-paper";
 
-export const Image = styled.Image`
-  aspect-ratio: 1;
-  height: 220px;
-  width: 220px;
-`;
-
-export const ImageWrapper = styled.View`
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
 export const Wrapper = styled(TouchableRipple)`
   border-radius: 30px;
   background-color: #f1f3f4;
@@ -21,9 +8,10 @@ export const Wrapper = styled(TouchableRipple)`
 `;
 
 export const Content = styled.View`
-  flex-direction: row;
+  flex-direction: column;
   justify-content: space-between;
   display: flex;
+  max-width: 280px;
 `;
 
 export const Title = styled(Text)`
@@ -38,15 +26,8 @@ export const Description = styled(Text)`
   font-size: 14px;
 `;
 
-export const TextWrapper = styled.View`
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  max-width: 160px;
-`;
-
 export const PlayButtonWrapper = styled.View`
-  background-color: #000;
+  background-color: ${(p) => (p.color ? p.color : "#000")}
   border-radius: 50px;
   width: 40px;
   height: 40px;

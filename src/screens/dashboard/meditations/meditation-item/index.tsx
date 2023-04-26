@@ -2,40 +2,50 @@ import React from "react";
 import { Button, List } from "react-native-paper";
 
 import { convertTimestamp } from "../utils";
+import { PlayButton, ButtonRow, ItemView } from "./styles";
 
-import { PlayButton, ItemText, ButtonRow, ItemView, Row } from "./styles";
+const getDescription = (
+  title: string,
+  duration: number,
+  type: string,
+  dbCreatedAt: string,
+) => {
+  const createdAt = convertTimestamp(dbCreatedAt);
 
-const typeOfDays = {
-  morning: "Morning",
-  afternoon: "Afternoon",
-  evening: "Evening",
+  let meditationType = "";
+  switch (type) {
+    case "micro":
+      meditationType = "Micro Meditation";
+      break;
+    case "course":
+      meditationType = "Course";
+      break;
+    case "personalized":
+      meditationType = "Single Meditation";
+      break;
+    default:
+      break;
+  }
+
+  return `${meditationType} - ${duration} minutes. Created on ${createdAt}. `;
 };
 
 const MeditationItem = ({ item, onPlay, onDelete, isDeleting }: any) => {
   if (!item) return null;
 
-  const createdAt = convertTimestamp(item.createdAt);
-  const title = item?.value
-    ? `${item.value} Micro Meditation`
-    : `Personalized ${typeOfDays[item.typeOfDay]} Meditation`;
-  const technique = item?.technique?.value || item?.technique;
   return (
     <List.AccordionGroup>
       <List.Accordion
-        title={title}
-        description={`Created ${createdAt}`}
+        title={`${item.title}`}
+        description={getDescription(
+          item.title,
+          item.duration,
+          item.type,
+          item.createdAt,
+        )}
         id={item.id}
       >
         <ItemView>
-          <Row>
-            <ItemText>Intention: {item.goal}</ItemText>
-          </Row>
-          <Row>
-            <ItemText>Technique: {technique}</ItemText>
-          </Row>
-          <Row>
-            <ItemText>Time: {item.duration} minutes</ItemText>
-          </Row>
           <ButtonRow>
             <PlayButton
               onPress={() => onPlay(item.id)}

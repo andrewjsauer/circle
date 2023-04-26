@@ -1,15 +1,20 @@
 import React, { memo } from "react";
 import { useSelector } from "react-redux";
-import { useTranslation } from "react-i18next";
 
 import { selectUserData } from "@store/user/selectors";
 
 import * as routes from "@constants/routes";
-import { microHits } from "@constants/meditations";
+import {
+  microHits,
+  coursesPt1,
+  coursesPt2,
+  personalizedMeditation,
+} from "@constants/meditations";
 import { getTimeOfDay } from "@utils";
 
 import Card from "./card";
 import CardCompact from "./card-compact";
+import CardCourse from "./card-course";
 import {
   CardsWrapper,
   Container,
@@ -23,15 +28,19 @@ import {
 } from "./styles";
 
 const Home = ({ navigation }: any) => {
-  const { t } = useTranslation();
   const userData = useSelector(selectUserData);
-
-  const handleGetStarted = (meditationType) => {
-    navigation.navigate(routes.MEDITATION_BUILDER_SCREEN, { meditationType });
-  };
 
   const timeOfDay = getTimeOfDay();
   const name = userData?.name ? `${userData?.name}` : "Hello!";
+
+  const handleGetStarted = (meditation) => {
+    if (meditation.type === "course") {
+      return navigation.navigate(routes.COURSES_SCREEN, { meditation, name });
+    }
+
+    navigation.navigate(routes.MEDITATION_BUILDER_SCREEN, { meditation, name });
+  };
+
   return (
     <Layout>
       <Container>
@@ -41,9 +50,9 @@ const Home = ({ navigation }: any) => {
         </Header>
         <Section>
           <Card
-            onPress={() => handleGetStarted({ id: "personalized" })}
-            title="Your guided personalized meditation"
-            description="Answer a few questions about your goals, preferences, and current situation"
+            onPress={() => handleGetStarted(personalizedMeditation)}
+            title="Your Tailored Meditation Journey"
+            description="Answer a series of questions to shape your meditation's direction and unlock a unique, personal journey tailored to your needs and preferences."
             image={require("@assets/meditation-1.png")}
             time="Begin"
           />
@@ -64,15 +73,29 @@ const Home = ({ navigation }: any) => {
           </CardsWrapper>
         </Section>
         <Section>
-          <SectionTitle>Pre-Recorded Meditations</SectionTitle>
+          <SectionTitle>Courses</SectionTitle>
           <CardsWrapper horizontal>
-            {microHits.map((option) => (
+            {coursesPt1.map((option) => (
               <CardWrapper key={option.id}>
-                <CardCompact
+                <CardCourse
                   title={option.title}
                   color={option.color}
-                  time="5 minutes"
+                  description={option.description}
                   onPress={() => handleGetStarted(option)}
+                  time={option.time}
+                />
+              </CardWrapper>
+            ))}
+          </CardsWrapper>
+          <CardsWrapper horizontal>
+            {coursesPt2.map((option) => (
+              <CardWrapper key={option.id}>
+                <CardCourse
+                  title={option.title}
+                  color={option.color}
+                  description={option.description}
+                  onPress={() => handleGetStarted(option)}
+                  time={option.time}
                 />
               </CardWrapper>
             ))}

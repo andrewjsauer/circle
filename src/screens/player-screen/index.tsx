@@ -40,7 +40,7 @@ type Props = {
   navigation: Navigation;
   route: {
     params: {
-      meditationId: string;
+      audioId: string;
       data?: any;
       isSavedMeditation: boolean;
     };
@@ -48,7 +48,7 @@ type Props = {
 };
 
 const PlayerScreen = ({ navigation, route }: Props) => {
-  const { meditationId, isSavedMeditation } = route.params;
+  const { audioId, isSavedMeditation } = route.params;
 
   const [showEndScreen, setShowEndScreen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -67,7 +67,7 @@ const PlayerScreen = ({ navigation, route }: Props) => {
   };
 
   const { playbackState, isPlayerReady, isLoading, duration, position } =
-    usePlayer(meditationId, handleClose);
+    usePlayer(audioId, handleClose);
 
   useEffect(() => {
     if (isPlayerReady) {
@@ -101,12 +101,7 @@ const PlayerScreen = ({ navigation, route }: Props) => {
     const meditationData = !isMeditationSaved ? route.params.data : null;
 
     try {
-      await onMeditationSave(
-        meditationId,
-        meditationData,
-        userId,
-        totalDuration,
-      );
+      await onMeditationSave(audioId, meditationData, userId, totalDuration);
     } catch (error) {
       console.error("Error saving meditation:", error);
     }
@@ -117,7 +112,7 @@ const PlayerScreen = ({ navigation, route }: Props) => {
 
   const handleNoThanks = async () => {
     try {
-      await onMeditationDelete(meditationId);
+      await onMeditationDelete(audioId);
     } catch (error) {
       console.error("Error deleting meditation:", error);
     }

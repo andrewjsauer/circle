@@ -8,10 +8,6 @@ import firestore from "@react-native-firebase/firestore";
 
 import CloseButton from "@components/close-button";
 import * as routes from "@constants/routes";
-import {
-  personalizedQuestions,
-  microHitQuestions,
-} from "@constants/meditations";
 
 import { Navigation } from "@types";
 import { selectUserData } from "@store/user/selectors";
@@ -19,6 +15,7 @@ import { getTimeOfDay } from "@utils";
 
 import Dropdown from "./dropdown";
 import TextInput from "./text-input";
+import BreathingCircle from "./breathing-circle";
 
 import {
   PreviousButton,
@@ -27,41 +24,41 @@ import {
   QuestionWrapper,
   CompleteTitle,
   CompleteSubTitle,
-  LoadingSpinner,
   ProgressBarWrapper,
   Layout,
   ProgressText,
   NextButton,
   ProgressBar,
   QuestionTitle,
+  BreathingCircleView,
 } from "./styles";
 
 interface Props {
   navigation: Navigation;
   route: {
     params: {
-      meditationType: any;
+      meditation: any;
+      name: string;
     };
   };
 }
 
 const MeditationBuilderScreen = ({ navigation, route }: Props) => {
-  const { meditationType } = route.params;
+  const { meditation, name } = route.params;
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadError, setUploadError] = useState(null);
+  const [uploadMessage, setUploadMessage] = useState("");
+  const [uploadError, setUploadError]: any = useState(null);
   const [textInputError, setTextInputError] = useState("");
 
   const userData = useSelector(selectUserData);
 
-  const questionsList: any =
-    meditationType.id === "personalized"
-      ? personalizedQuestions
-      : microHitQuestions;
+  const { questions } = meditation;
+  const questionsLength = questions.length;
 
-  const isLastQuestion = currentQuestionIndex === questionsList.length - 1;
+  const isLastQuestion = currentQuestionIndex === questionsLength - 1;
   const isFirstQuestion = currentQuestionIndex === 0;
 
   const handleOptionSelect = (questionId, optionValue, isTextInput = false) => {
@@ -90,34 +87,61 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
 
   const handleNextQuestion = async () => {
     if (isLastQuestion) {
+      setUploadMessage("Creating your personalized meditation...");
       setIsUploading(true);
       setUploadError(null);
 
+      const prompt = meditation.prompt({ ...answers, user_name: name });
+
       const payload = {
         ...answers,
-        ...meditationType,
+        ...meditation,
+        prompt,
         typeOfDay: getTimeOfDay(),
         voice: userData?.voice || "female",
         createdAt: firestore.FieldValue.serverTimestamp(),
       };
 
-      const { data: meditationId } = await functions().httpsCallable(
-        "createMeditation",
-      )(payload);
+      delete payload.questions;
 
-      if (typeof meditationId === "string") {
-        navigation.navigate(routes.PLAYER_SCREEN, {
-          data: { ...payload, ...meditationType },
-          meditationId,
-          isSavedMeditation: false,
-        });
-      } else {
+      const { data: contentData } = await functions().httpsCallable(
+        "getContent",
+      )({ prompt });
+
+      const { content, error: contentError } = contentData;
+
+      if (contentError) {
         setUploadError(
-          "Looks like there was an error creating your meditation. Please try again later.",
+          `Looks like there was an error creating your meditation. Please try again later. Error: ${error}`,
         );
+        setIsUploading(false);
+        return;
       }
 
+      setUploadMessage("Almost done! Converting your meditation into audio...");
+
+      const { data: audioData } = await functions().httpsCallable("getAudio")({
+        content,
+      });
+
+      const { audioId, error: audioError } = audioData;
+
+      if (audioError) {
+        setUploadError(
+          `Looks like there was an error turning your meditation into audio. Please try again later. Error: ${audioError}`,
+        );
+        setIsUploading(false);
+        return;
+      }
+
+      navigation.navigate(routes.PLAYER_SCREEN, {
+        data: payload,
+        audioId,
+        isSavedMeditation: false,
+      });
+
       setIsUploading(false);
+      setUploadMessage("");
       return;
     }
 
@@ -129,12 +153,14 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
   if (isUploading) {
     content = (
       <>
-        <LoadingSpinner size="large" />
-        <CompleteTitle>Creating your personalized meditation...</CompleteTitle>
+        <CompleteTitle>{uploadMessage}</CompleteTitle>
         <CompleteSubTitle>
-          Please allow up to a minute or so. We will start your meditation once
-          it&apos;s ready.
+          Please allow up to a minute or so. In the meantime, let&apos;s take a
+          few deep breaths.
         </CompleteSubTitle>
+        <BreathingCircleView>
+          <BreathingCircle />
+        </BreathingCircleView>
       </>
     );
   } else if (uploadError) {
@@ -149,7 +175,7 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
     );
   } else {
     const { title, options, placeholder, id, type } =
-      questionsList[currentQuestionIndex];
+      questions[currentQuestionIndex];
 
     content = (
       <>
@@ -177,11 +203,11 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
           )}
           <ProgressBarWrapper>
             <ProgressBar
-              progress={(currentQuestionIndex + 1) / questionsList.length}
-              color={meditationType.color}
+              progress={(currentQuestionIndex + 1) / questionsLength}
+              color={meditation.color}
             />
             <ProgressText>
-              {currentQuestionIndex + 1} of {questionsList.length} questions
+              {currentQuestionIndex + 1} of {questionsLength} questions
             </ProgressText>
           </ProgressBarWrapper>
           <ButtonWrapper>
@@ -206,7 +232,7 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <Layout color={meditationType.backgroundColor}>{content}</Layout>
+      <Layout>{content}</Layout>
     </TouchableWithoutFeedback>
   );
 };

@@ -12,7 +12,7 @@ export const Layout = styled.View`
   justify-content: center;
   align-items: center;
   height: 100%;
-  background-color: ${(p) => p.color};
+  background-color: #f5f5f5;
   padding: 0 18px;
 `;
 
@@ -105,4 +105,12 @@ export const ErrorButton = styled(Button)`
   margin-top: 60px;
   margin-bottom: 12px;
   padding: 4px 0;
+`;
+
+export const BreathingCircleView = styled.View`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 400px;
 `;
