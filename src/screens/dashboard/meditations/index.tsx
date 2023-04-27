@@ -1,22 +1,18 @@
 import React, { useState, useEffect, memo } from "react";
 import { useSelector } from "react-redux";
-import { List } from "react-native-paper";
 
 import firestore from "@react-native-firebase/firestore";
-import storage from "@react-native-firebase/storage";
 
-import backgroundImage from "@assets/background.png";
 import { selectUserId, selectIsUserLoggedIn } from "@store/user/selectors";
 import * as routes from "@constants/routes";
 
-import MeditationItem from "./meditation-item";
+import MeditationItem from "./item";
 import {
-  Container,
   Layout,
   LoadingContainer,
   LoadingSpinner,
   LoadingTitle,
-  MeditationList,
+  List as TestList,
   Subtitle,
   NoMeditationsText,
 } from "./styles";
@@ -27,7 +23,6 @@ const Meditations = ({ navigation }) => {
 
   const [meditations, setMeditations] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const subscriber = firestore()
@@ -68,36 +63,15 @@ const Meditations = ({ navigation }) => {
     });
   };
 
-  const handleDelete = async (meditationId) => {
-    setIsDeleting(true);
-
-    try {
-      firestore()
-        .collection("users")
-        .doc(userId)
-        .collection("meditations")
-        .doc(meditationId)
-        .delete();
-
-      firestore().collection("meditations").doc(meditationId).delete();
-
-      storage().ref(`audio/${meditationId}.mp3`).delete();
-    } catch (error) {
-      console.log("error", error);
-    }
-
-    setIsDeleting(false);
-  };
-
   return (
-    <Layout source={backgroundImage}>
+    <Layout>
       {isLoading ? (
         <LoadingContainer>
           <LoadingSpinner size="large" />
           <LoadingTitle>Loading profile...</LoadingTitle>
         </LoadingContainer>
       ) : (
-        <Container>
+        <>
           <Subtitle>Saved meditations ({meditations.length || 0})</Subtitle>
           {!meditations.length ? (
             <LoadingContainer>
@@ -106,21 +80,17 @@ const Meditations = ({ navigation }) => {
               </NoMeditationsText>
             </LoadingContainer>
           ) : (
-            <MeditationList>
-              <List.AccordionGroup>
-                {meditations.map((meditation) => (
-                  <MeditationItem
-                    key={meditation.id}
-                    onPlay={handlePlay}
-                    onDelete={handleDelete}
-                    item={meditation}
-                    isDeleting={isDeleting}
-                  />
-                ))}
-              </List.AccordionGroup>
-            </MeditationList>
+            <TestList>
+              {meditations.map((meditation) => (
+                <MeditationItem
+                  key={meditation.id}
+                  onPlay={handlePlay}
+                  item={meditation}
+                />
+              ))}
+            </TestList>
           )}
-        </Container>
+        </>
       )}
     </Layout>
   );

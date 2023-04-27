@@ -8,6 +8,7 @@ import firestore from "@react-native-firebase/firestore";
 
 import CloseButton from "@components/close-button";
 import * as routes from "@constants/routes";
+import { times } from "@constants/meditations";
 
 import { Navigation } from "@types";
 import { selectUserData } from "@store/user/selectors";
@@ -91,10 +92,15 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
       setIsUploading(true);
       setUploadError(null);
 
-      const prompt = meditation.prompt({ ...answers, user_name: name });
+      const userAnswers = {
+        ...answers,
+        ...(answers.time && { time: times.find((t) => t.id === answers.time) }),
+      };
+
+      const prompt = meditation.prompt({ ...userAnswers, user_name: name });
 
       const payload = {
-        ...answers,
+        ...userAnswers,
         ...meditation,
         prompt,
         typeOfDay: getTimeOfDay(),

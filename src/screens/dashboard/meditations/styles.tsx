@@ -1,19 +1,14 @@
 import styled from "styled-components/native";
 import { Text, ActivityIndicator } from "react-native-paper";
 
-export const MeditationList = styled.ScrollView`
+export const List = styled.ScrollView`
   height: 75%;
   padding: 0 12px;
 `;
 
-export const Layout = styled.ImageBackground`
+export const Layout = styled.SafeAreaView`
   height: 100%;
-`;
-
-export const Container = styled.SafeAreaView`
   display: flex;
-  height: 100%;
-  padding: 0 24px;
 `;
 
 export const LoadingContainer = styled.SafeAreaView`

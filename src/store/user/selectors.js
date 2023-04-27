@@ -3,6 +3,7 @@ import { createSelector } from "reselect";
 export const selectFirebaseUser = (state) => state.user.firebaseUser;
 export const selectUserData = (state) => state.user.userData;
 export const selectIsFetching = (state) => state.user.isFetching;
+export const selectSubscriptions = (state) => state.user.subscriptions;
 
 export const selectIsUserLoggedIn = createSelector(
   selectFirebaseUser,

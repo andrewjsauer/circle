@@ -1,7 +1,7 @@
 import React, { memo } from "react";
 import { useSelector } from "react-redux";
 
-import { selectUserData } from "@store/user/selectors";
+import { selectUserData, selectSubscriptions } from "@store/user/selectors";
 
 import * as routes from "@constants/routes";
 import {
@@ -25,10 +25,18 @@ import {
   Section,
   SectionTitle,
   CardWrapper,
+  TrialWrapper,
+  TrialText,
+  TrialTitle,
+  TrialButton,
 } from "./styles";
 
 const Home = ({ navigation }: any) => {
   const userData = useSelector(selectUserData);
+  const userSubscriptions = useSelector(selectSubscriptions);
+
+  // update accordingly with locked/unlocked icon 0/1 <unlock>
+  console.log("userSubscriptions", userSubscriptions);
 
   const timeOfDay = getTimeOfDay();
   const name = userData?.name ? `${userData?.name}` : "Hello!";
@@ -48,11 +56,21 @@ const Home = ({ navigation }: any) => {
           <TypeOfDayText>Good {timeOfDay}</TypeOfDayText>
           <NameText>{name}</NameText>
         </Header>
+        {userSubscriptions.isTrial ? (
+          <TrialWrapper>
+            <TrialTitle>Upgrade to Circle Plus</TrialTitle>
+            <TrialText>
+              Get unlimited access to personalized meditations, micro hits, and
+              courses.
+            </TrialText>
+            <TrialButton>Go Plus</TrialButton>
+          </TrialWrapper>
+        ) : null}
         <Section>
           <Card
             onPress={() => handleGetStarted(personalizedMeditation)}
             title="Your Tailored Meditation Journey"
-            description="Answer a series of questions to shape your meditation's direction and unlock a unique, personal journey tailored to your needs and preferences."
+            description="This personalized meditation is based upon a series of questions that will shape the direction and unlock a unique, personal journey tailored to your needs and preferences."
             image={require("@assets/meditation-1.png")}
             time="Begin"
           />

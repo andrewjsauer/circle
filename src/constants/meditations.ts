@@ -61,7 +61,7 @@ export const personalizedMeditation = {
   type: "personalized",
   color: "#5588BB",
   prompt: ({ goal, challenge, feel, technique, time }) =>
-    `Please create a ${time.duration}-minute (approximately ${time.word} words, not including SSML tags) personalized meditation based on the user's goal of '${goal}', addressing their specific challenges or concerns related to '${challenge}', leaving them feeling '${feel}'. Incorporate the meditation techniques they prefer, such as '${technique}'. Make sure the meditation script is around ${time.words} words in length.`,
+    `Please create a ${time.duration}-minute (approximately ${time.words} words, not including SSML tags) personalized meditation based on the user's goal of '${goal}', addressing their specific challenges or concerns related to '${challenge}', leaving them feeling '${feel}'. Incorporate the meditation techniques they prefer, such as '${technique}'. Make sure the meditation script is around ${time.words} words in length.`,
 };
 
 const Mindfulness = "mindfulness";
@@ -80,7 +80,6 @@ export const microHits = [
     title: "Mindfulness Meditation",
     description:
       "Boost self-awareness and emotional balance with quick, non-judgmental observation",
-    time: times[0].id,
     color: "#5588BB",
     questions: [
       {
@@ -110,7 +109,6 @@ export const microHits = [
     title: "Visualization Meditation",
     description: "Unleash rapid relaxation with short, vivid mental images",
     placeholder: "e.g., success, happiness, peace, love",
-    time: times[0].id,
     color: "#4477AA",
     questions: [
       {
@@ -148,7 +146,6 @@ export const microHits = [
       id: "repetition",
       value: "Repetition",
     },
-    time: times[0].id,
     color: "#336699",
     questions: [
       {
@@ -177,7 +174,6 @@ export const microHits = [
       id: "walking",
       value: "Walking",
     },
-    time: times[0].id,
     color: "#225588",
     questions: [
       {
@@ -285,12 +281,6 @@ export const meditationsByCourseType = {
       time: "15 minutes",
       questions: [
         {
-          title: "How long does it typically take you to fall asleep?",
-          placeholder: "e.g., 15 minutes, 30 minutes, 1 hour",
-          id: "sleep_onset_time",
-          type: "text",
-        },
-        {
           title:
             "What specific thoughts or feelings prevent you from falling asleep easily?",
           placeholder: "e.g., racing thoughts, anxiety, stress",
@@ -298,8 +288,8 @@ export const meditationsByCourseType = {
           type: "text",
         },
       ],
-      prompt: ({ user_name, sleep_onset_time, sleep_obstacles }) =>
-        `Please write a 15-minute (approximately 600 words, not including SSML tags) guided breathing exercises to help ${user_name} fall asleep, considering their sleep onset time of ${sleep_onset_time} and thoughts or feelings ${sleep_obstacles}.`,
+      prompt: ({ user_name, sleep_obstacles }) =>
+        `Please write a 15-minute (approximately 600 words, not including SSML tags) guided breathing exercises to help ${user_name} fall asleep, considering their thoughts or feelings on ${sleep_obstacles}.`,
     },
     {
       title: "Progressive Muscle Relaxation for Sleep",

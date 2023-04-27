@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import firestore from "@react-native-firebase/firestore";
 
 import { selectFirebaseUser } from "@store/user/selectors";
-import { updateUserData } from "@store/user/slice";
+import { updateUserData, updateSubscriptions } from "@store/user/slice";
 
 export const useGetUserData = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -14,16 +14,14 @@ export const useGetUserData = () => {
   useEffect(() => {
     setIsLoading(true);
 
+    const subscriptionsRef = firestore()
+      .collection("subscriptions")
+      .doc(user.uid);
     const userRef = firestore().collection("users").doc(user.uid);
 
-    const unsubscribe = userRef.onSnapshot(
+    const unsubscribeSubscriptions = subscriptionsRef.onSnapshot(
       (doc) => {
-        console.log("doc", doc.data());
-
-        if (doc.exists) {
-          dispatch(updateUserData(doc.data()));
-        }
-
+        if (doc.exists) dispatch(updateSubscriptions(doc.data()));
         setIsLoading(false);
       },
       (error) => {
@@ -32,7 +30,21 @@ export const useGetUserData = () => {
       },
     );
 
-    return () => unsubscribe();
+    const unsubscribeUser = userRef.onSnapshot(
+      (doc) => {
+        if (doc.exists) dispatch(updateUserData(doc.data()));
+        setIsLoading(false);
+      },
+      (error) => {
+        console.error("Error fetching user data: ", error);
+        setIsLoading(false);
+      },
+    );
+
+    return () => {
+      unsubscribeUser();
+      unsubscribeSubscriptions();
+    };
   }, []);
 
   return isLoading;

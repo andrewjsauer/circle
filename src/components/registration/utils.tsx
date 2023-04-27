@@ -19,10 +19,10 @@ export const checkUsername = async (username) => {
     const usernameQuery = await query.get();
 
     usernameQuery.forEach((doc) => {
-      const { displayName: otherDisplayName } = doc.data();
+      const data = doc.data();
 
-      if (otherDisplayName) {
-        return false;
+      if (data.displayName === username) {
+        throw new Error("Username already exists");
       }
     });
 
@@ -38,6 +38,12 @@ export const updateUser = (user, firstName) => {
     firestore().collection("users").doc(user.uid).set({
       name: firstName,
       id: user.uid,
+    });
+
+    firestore().collection("subscriptions").doc(user.uid).set({
+      personalized: 1,
+      micro: 2,
+      course: 1,
     });
 
     return true;
