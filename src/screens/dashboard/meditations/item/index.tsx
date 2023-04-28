@@ -12,35 +12,42 @@ import {
   Time,
 } from "./styles";
 
-const getType = (type: string) => {
-  let meditationType = "";
-  switch (type) {
+const getType = (item: any) => {
+  let title = "";
+  let description = "";
+
+  const createdAt = convertTimestamp(item.createdAt);
+
+  switch (item.type) {
     case "micro":
-      meditationType = "Micro";
+      title = `Micro ${item.title}`;
+      description = `Created on ${createdAt}`;
       break;
     case "course":
-      meditationType = "Course";
+      title = `${item.title} Course • ${item.lessonTitle}`;
+      description = `Created on ${createdAt}`;
       break;
     case "personalized":
-      meditationType = "Personalized";
+      title = `${item.title}`;
+      description = `Created on ${createdAt}`;
       break;
     default:
       break;
   }
 
-  return meditationType;
+  return {
+    title,
+    description,
+  };
 };
 
 const Item = ({ item, onPlay }: any) => {
-  const createdAt = convertTimestamp(item.createdAt);
-  const type = getType(item.type);
+  const { title, description } = getType(item);
   return (
-    <Wrapper onPress={() => onPlay(item.id)}>
+    <Wrapper onPress={() => onPlay(item.audioId)}>
       <Content>
-        <Title>
-          {type} {item.title}
-        </Title>
-        <Description>Created on {createdAt}</Description>
+        <Title>{title}</Title>
+        <Description>{description}</Description>
         <TimeWrapper>
           <PlayButtonWrapper color={item.color}>
             <Icon name="controller-play" size={20} color="#fff" />

@@ -12,8 +12,8 @@ import {
   LoadingContainer,
   LoadingSpinner,
   LoadingTitle,
-  List as TestList,
-  Subtitle,
+  List,
+  Title,
   NoMeditationsText,
 } from "./styles";
 
@@ -26,9 +26,8 @@ const Meditations = ({ navigation }) => {
 
   useEffect(() => {
     const subscriber = firestore()
-      .collection("users")
-      .doc(userId)
       .collection("meditations")
+      .where("userId", "==", userId)
       .onSnapshot((querySnapshot) => {
         if (!isUserLoggedIn) return;
         setIsLoading(true);
@@ -41,7 +40,10 @@ const Meditations = ({ navigation }) => {
 
           const isMeditation = data?.createdAt?.seconds ?? false;
           if (isMeditation) {
-            meditationData.push(data);
+            meditationData.push({
+              ...data,
+              audioId: doc.id,
+            });
           }
         });
 
@@ -72,7 +74,7 @@ const Meditations = ({ navigation }) => {
         </LoadingContainer>
       ) : (
         <>
-          <Subtitle>Saved meditations ({meditations.length || 0})</Subtitle>
+          <Title>Your meditations ({meditations.length || 0})</Title>
           {!meditations.length ? (
             <LoadingContainer>
               <NoMeditationsText>
@@ -80,7 +82,7 @@ const Meditations = ({ navigation }) => {
               </NoMeditationsText>
             </LoadingContainer>
           ) : (
-            <TestList>
+            <List>
               {meditations.map((meditation) => (
                 <MeditationItem
                   key={meditation.id}
@@ -88,7 +90,7 @@ const Meditations = ({ navigation }) => {
                   item={meditation}
                 />
               ))}
-            </TestList>
+            </List>
           )}
         </>
       )}

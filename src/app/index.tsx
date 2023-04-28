@@ -15,6 +15,7 @@ import {
   MeditationBuilderScreen,
   PlayerScreen,
   RegisterScreen,
+  FeedbackScreen,
 } from "@screens";
 import * as routes from "@constants/routes";
 
@@ -74,6 +75,11 @@ export default function App() {
                 options={{ headerShown: false }}
                 name={routes.PLAYER_SCREEN}
                 component={PlayerScreen}
+              />
+              <Stack.Screen
+                options={{ headerShown: false }}
+                name={routes.FEEDBACK_SCREEN}
+                component={FeedbackScreen}
               />
             </>
           )}

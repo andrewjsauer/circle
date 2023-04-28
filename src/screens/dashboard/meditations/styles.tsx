@@ -23,8 +23,8 @@ export const LoadingSpinner = styled(ActivityIndicator)`
   margin-bottom: 24px;
 `;
 
-export const Subtitle = styled(Text)`
-  font-size: 20px;
+export const Title = styled(Text)`
+  font-size: 24px;
   font-weight: 600;
   margin: 18px 0;
   padding: 0 18px;

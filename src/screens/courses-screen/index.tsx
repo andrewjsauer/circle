@@ -40,7 +40,12 @@ const CoursesScreen = ({ navigation, route }: Props) => {
                 color={meditation.color}
                 onPress={() =>
                   navigation.navigate(routes.MEDITATION_BUILDER_SCREEN, {
-                    meditation: { ...lesson, ...meditation },
+                    meditation: {
+                      ...lesson,
+                      ...meditation,
+                      lessonTitle: lesson.title,
+                      lessonDescription: lesson.description,
+                    },
                     name,
                   })
                 }

@@ -11,7 +11,7 @@ import * as routes from "@constants/routes";
 import { times } from "@constants/meditations";
 
 import { Navigation } from "@types";
-import { selectUserData } from "@store/user/selectors";
+import { selectUserData, selectUserId } from "@store/user/selectors";
 import { getTimeOfDay } from "@utils";
 
 import Dropdown from "./dropdown";
@@ -55,6 +55,7 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
   const [textInputError, setTextInputError] = useState("");
 
   const userData = useSelector(selectUserData);
+  const userId = useSelector(selectUserId);
 
   const { questions } = meditation;
   const questionsLength = questions.length;
@@ -110,41 +111,44 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
 
       delete payload.questions;
 
-      const { data: contentData } = await functions().httpsCallable(
-        "getContent",
-      )({ prompt });
+      console.log("payload", payload);
 
-      const { content, error: contentError } = contentData;
+      // const { data: contentData } = await functions().httpsCallable(
+      //   "getContent",
+      // )({ prompt });
 
-      if (contentError) {
-        setUploadError(
-          `Looks like there was an error creating your meditation. Please try again later. Error: ${error}`,
-        );
-        setIsUploading(false);
-        return;
-      }
+      // const { content, error: contentError } = contentData;
 
-      setUploadMessage("Almost done! Converting your meditation into audio...");
+      // if (contentError) {
+      //   setUploadError(
+      //     `Looks like there was an error creating your meditation. Please try again later. Error: ${error}`,
+      //   );
+      //   setIsUploading(false);
+      //   return;
+      // }
 
-      const { data: audioData } = await functions().httpsCallable("getAudio")({
-        content,
-      });
+      // setUploadMessage("Almost done! Converting your meditation into audio...");
 
-      const { audioId, error: audioError } = audioData;
+      // const { data: audioData } = await functions().httpsCallable("getAudio")({
+      //   content,
+      //   userId,
+      // });
 
-      if (audioError) {
-        setUploadError(
-          `Looks like there was an error turning your meditation into audio. Please try again later. Error: ${audioError}`,
-        );
-        setIsUploading(false);
-        return;
-      }
+      // const { audioId, error: audioError } = audioData;
 
-      navigation.navigate(routes.PLAYER_SCREEN, {
-        data: payload,
-        audioId,
-        isSavedMeditation: false,
-      });
+      // if (audioError) {
+      //   setUploadError(
+      //     `Looks like there was an error turning your meditation into audio. Please try again later. Error: ${audioError}`,
+      //   );
+      //   setIsUploading(false);
+      //   return;
+      // }
+
+      // navigation.navigate(routes.PLAYER_SCREEN, {
+      //   data: payload,
+      //   audioId,
+      //   isSavedMeditation: false,
+      // });
 
       setIsUploading(false);
       setUploadMessage("");

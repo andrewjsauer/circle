@@ -8,6 +8,7 @@ import {
   Title,
   Description,
   PlayButtonWrapper,
+  PlayWrapper,
 } from "./styles";
 
 const CardCompact = ({ onPress, title, description, color }: any) => {
@@ -18,9 +19,11 @@ const CardCompact = ({ onPress, title, description, color }: any) => {
           <Title>{title}</Title>
           <Description>{description}</Description>
         </TextWrapper>
-        <PlayButtonWrapper color={color}>
-          <Icon name="controller-play" size={20} color="#fff" />
-        </PlayButtonWrapper>
+        <PlayWrapper>
+          <PlayButtonWrapper color={color}>
+            <Icon name="controller-play" size={20} color="#fff" />
+          </PlayButtonWrapper>
+        </PlayWrapper>
       </Content>
     </Wrapper>
   );

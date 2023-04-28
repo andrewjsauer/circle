@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { Text } from "react-native-paper";
 
@@ -9,7 +9,6 @@ import * as routes from "@constants/routes";
 import CloseButton from "@components/close-button";
 import backgroundImage from "@assets/background.png";
 import Icon from "react-native-vector-icons/Feather";
-import Button from "@components/button";
 import { Navigation } from "@types";
 
 import { selectUserId } from "@store/user/selectors";
@@ -17,16 +16,12 @@ import { selectUserId } from "@store/user/selectors";
 import {
   AudioView,
   AudioTime,
-  ButtonWrapper,
-  CompleteText,
-  CompleteTitle,
   LoadingLayout,
   LoadingSpinner,
   Layout,
 } from "./styles";
 import AudioButton from "./audio-button";
 import { usePlayer } from "./hooks";
-import { onMeditationSave, onMeditationDelete } from "./utils";
 
 const formatDuration = (seconds) => {
   const minutes = Math.floor(seconds / 60);
@@ -48,22 +43,22 @@ type Props = {
 };
 
 const PlayerScreen = ({ navigation, route }: Props) => {
-  const { audioId, isSavedMeditation } = route.params;
+  const { audioId, data, isSavedMeditation } = route.params;
 
-  const [showEndScreen, setShowEndScreen] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [totalDuration, setTotalDuration] = useState(0);
-
+  const [durationInMinutes, setDurationInMinutes] = useState(0);
   const userId: string = useSelector(selectUserId);
 
   const handleClose = () => {
     TrackPlayer.reset();
 
     if (isSavedMeditation) {
-      navigation.navigate(routes.DASHBOARD_SCREEN);
-    } else {
-      setShowEndScreen(true);
+      return navigation.navigate(routes.DASHBOARD_SCREEN);
     }
+
+    return navigation.navigate(routes.FEEDBACK_SCREEN, {
+      audioId,
+      data: { ...data, userId, duration: durationInMinutes },
+    });
   };
 
   const { playbackState, isPlayerReady, isLoading, duration, position } =
@@ -81,8 +76,8 @@ const PlayerScreen = ({ navigation, route }: Props) => {
 
   useEffect(() => {
     if (duration) {
-      const durationInMinutes = Math.floor(duration / 60);
-      setTotalDuration(durationInMinutes);
+      const minutes = Math.floor(duration / 60);
+      setDurationInMinutes(minutes);
     }
   }, [duration]);
 
@@ -93,56 +88,6 @@ const PlayerScreen = ({ navigation, route }: Props) => {
       await TrackPlayer.play();
     }
   };
-
-  const handleSave = async () => {
-    setIsSaving(true);
-
-    const isMeditationSaved = !route.params?.data ?? false;
-    const meditationData = !isMeditationSaved ? route.params.data : null;
-
-    try {
-      await onMeditationSave(audioId, meditationData, userId, totalDuration);
-    } catch (error) {
-      console.error("Error saving meditation:", error);
-    }
-
-    navigation.navigate(routes.DASHBOARD_SCREEN);
-    setIsSaving(false);
-  };
-
-  const handleNoThanks = async () => {
-    try {
-      await onMeditationDelete(audioId);
-    } catch (error) {
-      console.error("Error deleting meditation:", error);
-    }
-
-    navigation.navigate(routes.DASHBOARD_SCREEN);
-  };
-
-  if (showEndScreen) {
-    return (
-      <LoadingLayout source={backgroundImage}>
-        <CompleteTitle>Finished!</CompleteTitle>
-        <CompleteText>
-          Would you like to save this meditation to listen to later?
-        </CompleteText>
-        <ButtonWrapper>
-          <Button
-            loading={isSaving}
-            disabled={isSaving}
-            onPress={handleSave}
-            mode="contained"
-          >
-            Save
-          </Button>
-          <Button disabled={isSaving} onPress={handleNoThanks}>
-            No thanks
-          </Button>
-        </ButtonWrapper>
-      </LoadingLayout>
-    );
-  }
 
   if (isLoading || !duration || !isPlayerReady) {
     return (

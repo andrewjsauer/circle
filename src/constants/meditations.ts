@@ -91,7 +91,7 @@ export const microHits = [
       },
       {
         title: "How would you like to feel after this mindfulness meditation?",
-        placeholder: "e.g., calm, focused, recharged",
+        placeholder: "e.g., calm, focused, recharged, energized, balanced, joy",
         id: "users_desired_feeling",
         type: "text",
       },
