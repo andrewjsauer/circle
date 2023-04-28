@@ -22,6 +22,12 @@ export const Title = styled(Text)`
   margin-bottom: 8px;
 `;
 
+export const SubTitle = styled(Text)`
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 12px;
+`;
+
 export const Description = styled(Text)`
   color: #000;
   font-size: 14px;

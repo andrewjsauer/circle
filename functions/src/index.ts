@@ -29,7 +29,7 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration);
 
 export const getContent = functions
-  .runWith({ secrets: [openApiKey] })
+  .runWith({ secrets: [openApiKey], timeoutSeconds: 5 * 60 })
   .https.onCall(async (data, context) => {
     if (!context.auth) {
       throw new functions.https.HttpsError(
@@ -39,16 +39,15 @@ export const getContent = functions
     }
 
     let content = null;
-
     const { prompt } = data;
 
     const systemContent =
       // eslint-disable-next-line quotes
-      'You are a highly skilled meditation practitioner, instructor, and writer. Your task is to provide the best meditation script in SSML format, like this "<speak><prosody rate="slow"><p><s>string 1</s><break time="10s"/><s>string 2</s><break time="20s"/><s>string 3</s></p></prosody></speak>". Include appropriate breaks between sentences for a smooth meditation experience, like this <break time="20s" />. Do not include apologies, notes, or commentary, only return the SSML formatted script.';
+      'You are a highly skilled meditation practitioner, instructor, and writer. Your task is to provide the best meditation script in SSML format, like this "<speak><prosody rate="slow"><p><s>string 1</s><break time="10s"/></p></prosody></speak>". Include appropriate breaks between sentences, like this <break time="5s" />, and add extra breaks in the middle of the session to allow for moments of silence and reflection, <break time="30s" />. Only return the meditation as an SSML formatted script.';
 
     try {
       const openAIResponse = await openai.createChatCompletion({
-        model: "gpt-3.5-turbo",
+        model: "gpt-4",
         messages: [
           {
             role: "system",
@@ -59,15 +58,16 @@ export const getContent = functions
             content: prompt,
           },
         ],
+        max_tokens: 800,
         temperature: 0.8,
       });
 
-      content = openAIResponse.data.choices[0].message.content;
+      ({ content } = openAIResponse.data.choices[0].message);
       functions.logger.info("OpenAI response", content);
 
       ssmlCheck.verifyAndFix(content).then((result) => {
         if (result.fixedSSML) {
-          functions.logger.info("Fixed SSML response");
+          functions.logger.info("Fixed SSML response", result.fixedSSML);
           content = result.fixedSSML;
         } else if (result.errors) {
           throw new Error("Invalid parsed response received from OpenAI");
@@ -76,7 +76,7 @@ export const getContent = functions
         }
       });
 
-      return { content };
+      return { content, usage: openAIResponse.data.usage };
     } catch (error: any) {
       if (error.response) {
         functions.logger.info(`Error status ${error.response.status}`);

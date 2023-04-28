@@ -5,8 +5,12 @@ import { RadioButton } from "react-native-paper";
 import firestore from "@react-native-firebase/firestore";
 import auth from "@react-native-firebase/auth";
 
-import backgroundImage from "@assets/background.png";
-import { selectUserId, selectUserData } from "@store/user/selectors";
+import {
+  selectUserId,
+  selectFirebaseUser,
+  selectUserData,
+  selectSubscriptions,
+} from "@store/user/selectors";
 
 import Button from "@components/button";
 
@@ -14,7 +18,7 @@ import {
   Container,
   Layout,
   TitleSection,
-  UserOptionSection,
+  Section,
   LogoutSection,
   Subtitle,
   Title,
@@ -23,6 +27,8 @@ import {
 const User = () => {
   const userId: string = useSelector(selectUserId);
   const userData = useSelector(selectUserData);
+  const firebaseUserData = useSelector(selectFirebaseUser);
+  const subscriptions = useSelector(selectSubscriptions);
 
   const handleLogout = async () => {
     try {
@@ -43,13 +49,29 @@ const User = () => {
   };
 
   return (
-    <Layout source={backgroundImage}>
+    <Layout>
       <Container>
         <TitleSection>
           <Title>Account Settings</Title>
         </TitleSection>
-        <UserOptionSection>
-          <Subtitle>Preferred audio preference</Subtitle>
+        <Section isRow>
+          <Subtitle isBold>Name: </Subtitle>
+          <Subtitle>{userData.name}</Subtitle>
+        </Section>
+        <Section isRow>
+          <Subtitle isBold>Username: </Subtitle>
+          <Subtitle>{firebaseUserData.displayName}</Subtitle>
+        </Section>
+        <Section isRow>
+          <Subtitle isBold>Email: </Subtitle>
+          <Subtitle>{firebaseUserData.email}</Subtitle>
+        </Section>
+        <Section isRow>
+          <Subtitle isBold>Circle Plus Subscriber: </Subtitle>
+          <Subtitle>{subscriptions.isSubscribed ? "Yes" : "No"}</Subtitle>
+        </Section>
+        <Section>
+          <Subtitle isBold>Preferred audio voice</Subtitle>
           <RadioButton.Group
             onValueChange={handleVoicePreferenceChange}
             value={userData?.voice || "female"}
@@ -57,7 +79,7 @@ const User = () => {
             <RadioButton.Item label="Female" value="female" />
             <RadioButton.Item label="Male" value="male" />
           </RadioButton.Group>
-        </UserOptionSection>
+        </Section>
         <LogoutSection>
           <Button mode="contained" onPress={handleLogout}>
             Logout

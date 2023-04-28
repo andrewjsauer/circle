@@ -18,6 +18,7 @@ export const onSave = async (
   batch.update(userDocRef, {
     duration: firestore.FieldValue.increment(data.duration),
     meditations: firestore.FieldValue.arrayUnion(id),
+    tokens: firestore.FieldValue.increment(data.usage.total_tokens),
   });
 
   if (!isSubscribed) {

@@ -8,7 +8,6 @@ import firestore from "@react-native-firebase/firestore";
 
 import CloseButton from "@components/close-button";
 import * as routes from "@constants/routes";
-import { times } from "@constants/meditations";
 
 import { Navigation } from "@types";
 import { selectUserData, selectUserId } from "@store/user/selectors";
@@ -19,6 +18,7 @@ import TextInput from "./text-input";
 import BreathingCircle from "./breathing-circle";
 
 import {
+  BreathingText,
   PreviousButton,
   ButtonWrapper,
   ErrorButton,
@@ -89,19 +89,14 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
 
   const handleNextQuestion = async () => {
     if (isLastQuestion) {
-      setUploadMessage("Creating your personalized meditation...");
+      setUploadMessage("Creating your meditation...");
       setIsUploading(true);
       setUploadError(null);
 
-      const userAnswers = {
-        ...answers,
-        ...(answers.time && { time: times.find((t) => t.id === answers.time) }),
-      };
-
-      const prompt = meditation.prompt({ ...userAnswers, user_name: name });
+      const prompt = meditation.prompt({ ...answers, userName: name });
 
       const payload = {
-        ...userAnswers,
+        ...answers,
         ...meditation,
         prompt,
         typeOfDay: getTimeOfDay(),
@@ -110,45 +105,61 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
       };
 
       delete payload.questions;
+      let contentData: any = {};
 
-      console.log("payload", payload);
+      try {
+        ({ data: contentData } = await functions().httpsCallable("getContent", {
+          timeout: 5 * 60 * 1000,
+        })({ prompt }));
+      } catch (error) {
+        setUploadError(
+          `Looks like there was an error creating your meditation. Please try again later. Error: ${error}`,
+        );
+        setIsUploading(false);
+        return;
+      }
 
-      // const { data: contentData } = await functions().httpsCallable(
-      //   "getContent",
-      // )({ prompt });
+      const { content, usage, error: contentError } = contentData;
 
-      // const { content, error: contentError } = contentData;
+      if (contentError) {
+        setUploadError(
+          `Looks like there was an error creating your meditation. Please try again later. Error: ${error}`,
+        );
+        setIsUploading(false);
+        return;
+      }
 
-      // if (contentError) {
-      //   setUploadError(
-      //     `Looks like there was an error creating your meditation. Please try again later. Error: ${error}`,
-      //   );
-      //   setIsUploading(false);
-      //   return;
-      // }
+      setUploadMessage("Almost done!");
+      let audioData: any = {};
 
-      // setUploadMessage("Almost done! Converting your meditation into audio...");
+      try {
+        ({ data: audioData } = await functions().httpsCallable("getAudio")({
+          content,
+          userId,
+        }));
+      } catch (error) {
+        setUploadError(
+          `Looks like there was an error turning your meditation into audio. Please try again. Error: ${error}`,
+        );
+        setIsUploading(false);
+        return;
+      }
 
-      // const { data: audioData } = await functions().httpsCallable("getAudio")({
-      //   content,
-      //   userId,
-      // });
+      const { audioId, error: audioError } = audioData;
 
-      // const { audioId, error: audioError } = audioData;
+      if (audioError) {
+        setUploadError(
+          `Looks like there was an error turning your meditation into audio. Please try again. Error: ${audioError}`,
+        );
+        setIsUploading(false);
+        return;
+      }
 
-      // if (audioError) {
-      //   setUploadError(
-      //     `Looks like there was an error turning your meditation into audio. Please try again later. Error: ${audioError}`,
-      //   );
-      //   setIsUploading(false);
-      //   return;
-      // }
-
-      // navigation.navigate(routes.PLAYER_SCREEN, {
-      //   data: payload,
-      //   audioId,
-      //   isSavedMeditation: false,
-      // });
+      navigation.navigate(routes.PLAYER_SCREEN, {
+        data: { ...payload, usage },
+        audioId,
+        isSavedMeditation: false,
+      });
 
       setIsUploading(false);
       setUploadMessage("");
@@ -165,12 +176,15 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
       <>
         <CompleteTitle>{uploadMessage}</CompleteTitle>
         <CompleteSubTitle>
-          Please allow up to a minute or so. In the meantime, let&apos;s take a
-          few deep breaths.
+          Note: We use a the latest AI models to create your personalized
+          meditation so please allow up to a minute or so.
         </CompleteSubTitle>
         <BreathingCircleView>
           <BreathingCircle />
         </BreathingCircleView>
+        <BreathingText>
+          In the meantime, let&apos;s take a few deep breaths.
+        </BreathingText>
       </>
     );
   } else if (uploadError) {

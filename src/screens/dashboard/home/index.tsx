@@ -8,6 +8,7 @@ import {
   microHits,
   coursesPt1,
   coursesPt2,
+  coursesPt3,
   personalizedMeditation,
 } from "@constants/meditations";
 import { getTimeOfDay } from "@utils";
@@ -134,7 +135,7 @@ const Home = ({ navigation }: any) => {
               <TrialLock
                 title="Courses"
                 numOfSessionsLeft={course}
-                text={`${course} lessons left`}
+                text={`${course} left`}
               />
             ) : (
               <SectionTitle>Courses</SectionTitle>
@@ -156,6 +157,21 @@ const Home = ({ navigation }: any) => {
             </CardsWrapper>
             <CardsWrapper horizontal>
               {coursesPt2.map((option) => (
+                <CardWrapper key={option.id}>
+                  <CardCourse
+                    title={option.title}
+                    color={option.color}
+                    description={option.description}
+                    onPress={() => handleGetStarted(option, course === 0)}
+                    time={option.time}
+                    isSubscribed={isSubscribed}
+                    numOfSessionsLeft={course}
+                  />
+                </CardWrapper>
+              ))}
+            </CardsWrapper>
+            <CardsWrapper horizontal>
+              {coursesPt3.map((option) => (
                 <CardWrapper key={option.id}>
                   <CardCourse
                     title={option.title}

@@ -91,12 +91,24 @@ export const CompleteTitle = styled(Text)`
   font-size: 24px;
   font-weight: 600;
   text-align: center;
+  width: 100%;
+  padding: 0 12px;
 `;
 
 export const CompleteSubTitle = styled(Text)`
-  font-size: 18px;
-  text-align: center;
+  font-size: 16px;
+  text-align: left;
   margin-top: 12px;
+  width: 100%;
+  padding: 0 12px;
+`;
+
+export const BreathingText = styled(Text)`
+  font-size: 20px;
+  font-weight: 600;
+  text-align: center;
+  margin-top: 40px;
+  padding: 0 12px;
 `;
 
 export const ErrorButton = styled(Button)`

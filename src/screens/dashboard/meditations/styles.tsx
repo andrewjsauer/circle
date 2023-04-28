@@ -24,7 +24,7 @@ export const LoadingSpinner = styled(ActivityIndicator)`
 `;
 
 export const Title = styled(Text)`
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 600;
   margin: 18px 0;
   padding: 0 18px;

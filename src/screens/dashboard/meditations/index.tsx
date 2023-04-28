@@ -85,7 +85,7 @@ const Meditations = ({ navigation }) => {
             <List>
               {meditations.map((meditation) => (
                 <MeditationItem
-                  key={meditation.id}
+                  key={meditation.audioId}
                   onPlay={handlePlay}
                   item={meditation}
                 />

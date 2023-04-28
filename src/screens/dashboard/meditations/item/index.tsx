@@ -6,6 +6,7 @@ import {
   Content,
   Wrapper,
   Title,
+  SubTitle,
   Description,
   PlayButtonWrapper,
   TimeWrapper,
@@ -13,22 +14,27 @@ import {
 } from "./styles";
 
 const getType = (item: any) => {
-  let title = "";
+  let title: any = "";
   let description = "";
 
   const createdAt = convertTimestamp(item.createdAt);
 
   switch (item.type) {
     case "micro":
-      title = `Micro ${item.title}`;
+      title = <Title>Micro {item.title}</Title>;
       description = `Created on ${createdAt}`;
       break;
     case "course":
-      title = `${item.title} Course • ${item.lessonTitle}`;
+      title = (
+        <>
+          <Title>{item.lessonTitle}</Title>
+          <SubTitle>{item.title} Course</SubTitle>
+        </>
+      );
       description = `Created on ${createdAt}`;
       break;
     case "personalized":
-      title = `${item.title}`;
+      title = <Title>{item.title}</Title>;
       description = `Created on ${createdAt}`;
       break;
     default:
@@ -46,7 +52,7 @@ const Item = ({ item, onPlay }: any) => {
   return (
     <Wrapper onPress={() => onPlay(item.audioId)}>
       <Content>
-        <Title>{title}</Title>
+        {title}
         <Description>{description}</Description>
         <TimeWrapper>
           <PlayButtonWrapper color={item.color}>
