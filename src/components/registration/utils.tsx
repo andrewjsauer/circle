@@ -1,11 +1,13 @@
 import firestore from "@react-native-firebase/firestore";
+import crashlytics from "@react-native-firebase/crashlytics";
 
 export const updateUserEmail = async (user, userEmail) => {
   try {
     await user.updateEmail(userEmail);
     return true;
   } catch (error) {
-    console.log("Update email failed", error);
+    console.log("Update email failed");
+    crashlytics().recordError(error);
     return false;
   }
 };
@@ -28,7 +30,8 @@ export const checkUsername = async (username) => {
 
     return true;
   } catch (error) {
-    console.log("Display name check failed", error);
+    crashlytics().recordError(error);
+    console.log("Username check failed");
     return false;
   }
 };
@@ -48,7 +51,8 @@ export const updateUser = (user, firstName) => {
 
     return true;
   } catch (error) {
-    console.log("Display name check failed", error);
+    console.log("Update user failed");
+    crashlytics().recordError(error);
     return false;
   }
 };
@@ -58,7 +62,8 @@ export const updateUserProfile = async (user, username) => {
     await user.updateProfile({ displayName: username });
     return true;
   } catch (error) {
-    console.log("Update user profile failed", error);
+    crashlytics().recordError(error);
+    console.log("Update user profile failed");
     return false;
   }
 };
@@ -71,7 +76,8 @@ export const addUserProfile = (username) => {
 
     return true;
   } catch (error) {
-    console.log("Update user profile failed", error);
+    crashlytics().recordError(error);
+    console.log("Add user profile failed");
     return false;
   }
 };

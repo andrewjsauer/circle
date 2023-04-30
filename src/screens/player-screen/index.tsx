@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { Text } from "react-native-paper";
 
 import TrackPlayer, { State } from "react-native-track-player";
+import analytics from "@react-native-firebase/analytics";
 
 import * as routes from "@constants/routes";
 
@@ -48,7 +49,7 @@ const PlayerScreen = ({ navigation, route }: Props) => {
   const [durationInMinutes, setDurationInMinutes] = useState(0);
   const userId: string = useSelector(selectUserId);
 
-  const handleClose = () => {
+  const handleClose = async () => {
     TrackPlayer.reset();
 
     if (isSavedMeditation) {
@@ -60,6 +61,16 @@ const PlayerScreen = ({ navigation, route }: Props) => {
       data: { ...data, userId, duration: durationInMinutes },
     });
   };
+
+  useEffect(() => {
+    const logScreen = async () => {
+      await analytics().logScreenView({
+        screen_name: routes.PLAYER_SCREEN,
+      });
+    };
+
+    logScreen();
+  }, []);
 
   const { playbackState, isPlayerReady, isLoading, duration, position } =
     usePlayer(audioId, handleClose);
@@ -84,8 +95,10 @@ const PlayerScreen = ({ navigation, route }: Props) => {
   const handlePlayPause = async () => {
     if (playbackState === State.Playing) {
       await TrackPlayer.pause();
+      await analytics().logEvent("pause_meditation");
     } else {
       await TrackPlayer.play();
+      await analytics().logEvent("play_meditation");
     }
   };
 

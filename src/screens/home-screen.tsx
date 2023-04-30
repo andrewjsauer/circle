@@ -1,7 +1,9 @@
-import React, { memo } from "react";
+import React, { memo, useEffect } from "react";
 import { StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
+
+import analytics from "@react-native-firebase/analytics";
 
 import Background from "@components/background";
 import Button from "@components/button";
@@ -18,11 +20,23 @@ type Props = {
 const HomeScreen = ({ navigation }: Props) => {
   const { t } = useTranslation();
 
-  const handleLoginPress = () => {
+  useEffect(() => {
+    const logScreen = async () => {
+      await analytics().logScreenView({
+        screen_name: routes.HOME_SCREEN,
+      });
+    };
+
+    logScreen();
+  }, []);
+
+  const handleLoginPress = async () => {
+    await analytics().logEvent("login_button_pressed");
     navigation.navigate(routes.LOGIN_SCREEN);
   };
 
-  const handleRegistrationPress = () => {
+  const handleRegistrationPress = async () => {
+    await analytics().logEvent("registration_button_pressed");
     navigation.navigate(routes.REGISTER_SCREEN);
   };
 

@@ -4,6 +4,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { Provider as PaperProvider } from "react-native-paper";
 import SplashScreen from "react-native-splash-screen";
+import crashlytics from "@react-native-firebase/crashlytics";
 
 import { theme } from "@utils";
 import {
@@ -26,6 +27,7 @@ const Stack = createStackNavigator();
 export default function App() {
   useEffect(() => {
     SplashScreen.hide();
+    crashlytics().log("App mounted.");
   }, []);
 
   const isUserAuthenticated = useAuthStateListener();

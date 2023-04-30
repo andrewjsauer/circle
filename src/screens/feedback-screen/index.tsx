@@ -1,7 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
+import analytics from "@react-native-firebase/analytics";
+import crashlytics from "@react-native-firebase/crashlytics";
+
 import { selectSubscriptions } from "@store/user/selectors";
+import * as routes from "@constants/routes";
 
 import { onSave } from "./utils";
 import {
@@ -27,7 +31,17 @@ const FeedbackForm = ({ navigation, route }: any) => {
   const [notHelpful, setNotHelpful] = useState("");
   const [helpful, setHelpful] = useState("");
 
-  const handleSubmit = (didSkip) => {
+  useEffect(() => {
+    const logScreen = async () => {
+      await analytics().logScreenView({
+        screen_name: routes.FEEDBACK_SCREEN,
+      });
+    };
+
+    logScreen();
+  }, []);
+
+  const handleSubmit = async (didSkip) => {
     setIsSaving(true);
 
     const { isSubscribed } = userSubscriptions;
@@ -40,10 +54,13 @@ const FeedbackForm = ({ navigation, route }: any) => {
         { notHelpful, helpful, didSkip },
         { isSubscribed, numOfSubscriptionsLeft },
       );
+
+      await analytics().logEvent("feedback_submitted");
     } catch (e: any) {
       console.log("Error saving feedback", e);
 
       setError(e);
+      crashlytics().recordError(e);
     }
 
     setIsSaving(false);

@@ -1,6 +1,9 @@
-import React, { useRef, memo } from "react";
+import React, { useRef, useEffect, memo } from "react";
 import { View } from "react-native";
 import { useDispatch } from "react-redux";
+
+import crashlytics from "@react-native-firebase/crashlytics";
+import analytics from "@react-native-firebase/analytics";
 
 import PhoneInput from "react-native-phone-number-input";
 import auth from "@react-native-firebase/auth";
@@ -45,10 +48,25 @@ const Auth = ({
   const { t } = useTranslation();
   const phoneInputRef = useRef<PhoneInput>(null);
 
+  useEffect(() => {
+    const logScreen = async () => {
+      await analytics().logScreenView({
+        screen_name: "AuthenticationScreen",
+      });
+    };
+
+    logScreen();
+  }, []);
+
   const signInWithPhoneNumber = async (number) => {
     onIsLoading(true);
 
     const confirmation = await auth().signInWithPhoneNumber(number);
+
+    crashlytics().log("Phone Number Submitted");
+    await analytics().logEvent("Phone Number Submit", {
+      number,
+    });
 
     onIsLoading(false);
     onConfirm(confirmation);
@@ -60,8 +78,11 @@ const Auth = ({
     try {
       await confirm.confirm(vcode);
     } catch (error) {
+      crashlytics().log("Invalid Verification Code");
       onCode({ ...phoneNumber, error: t("errors.invalidCode") });
     }
+
+    await analytics().logEvent("Confirmed Verification Code");
 
     const user = auth().currentUser;
     dispatch(login(user));
@@ -74,6 +95,8 @@ const Auth = ({
 
     if (!value) {
       onCode({ ...phoneNumber, error: t("errors.verificationCodeEmpty") });
+      crashlytics().log("Verification Code Empty");
+
       return;
     }
 
@@ -86,9 +109,13 @@ const Auth = ({
 
     if (!value) {
       onPhoneNumber({ ...phoneNumber, error: t("errors.phoneNumberEmpty") });
+      crashlytics().log("Phone Number Empty");
+
       return;
     } else if (!isValid) {
       onPhoneNumber({ ...phoneNumber, error: t("errors.phoneNumberInvalid") });
+      crashlytics().log("Phone Number Invalid");
+
       return;
     }
 

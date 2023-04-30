@@ -1,9 +1,10 @@
-import React, { memo } from "react";
+import React, { useEffect, memo } from "react";
 import { useSelector } from "react-redux";
 import { RadioButton } from "react-native-paper";
 
 import firestore from "@react-native-firebase/firestore";
 import auth from "@react-native-firebase/auth";
+import analytics from "@react-native-firebase/analytics";
 
 import {
   selectUserId,
@@ -29,6 +30,16 @@ const User = () => {
   const userData = useSelector(selectUserData);
   const firebaseUserData = useSelector(selectFirebaseUser);
   const subscriptions = useSelector(selectSubscriptions);
+
+  useEffect(() => {
+    const logScreen = async () => {
+      await analytics().logScreenView({
+        screen_name: "UserScreen",
+      });
+    };
+
+    logScreen();
+  }, []);
 
   const handleLogout = async () => {
     try {

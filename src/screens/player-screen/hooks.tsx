@@ -2,6 +2,9 @@
 import { useEffect, useState } from "react";
 import storage from "@react-native-firebase/storage";
 
+import analytics from "@react-native-firebase/analytics";
+import crashlytics from "@react-native-firebase/crashlytics";
+
 import TrackPlayer, {
   useProgress,
   usePlaybackState,
@@ -95,10 +98,15 @@ export const usePlayer = (audioId, onClose) => {
         const filePath = `audio/${audioId}.mp3`;
         const url = await storage().ref(filePath).getDownloadURL();
 
+        await analytics().logEvent("audio_played", {
+          audioId,
+        });
+
         setMeditationUrl(url);
         setIsLoading(false);
-      } catch (error) {
-        console.error("Error fetching audio:", error);
+      } catch (error: any) {
+        console.log("Setup audio error", error);
+        crashlytics().recordError(error);
         setIsLoading(false);
       }
     };

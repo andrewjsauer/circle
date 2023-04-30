@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { AppState } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 
+import crashlytics from "@react-native-firebase/crashlytics";
 import auth from "@react-native-firebase/auth";
 
 import { login } from "@store/user/slice";
@@ -19,6 +20,13 @@ export function useAuthStateListener() {
 
   function onAuthStateChanged(user, isRegistered) {
     if (!isRegistered) return;
+
+    crashlytics().setUserId(user.uid);
+    crashlytics().setAttributes({
+      email: user.email,
+      name: user.displayName,
+    });
+
     dispatch(login(user));
   }
 

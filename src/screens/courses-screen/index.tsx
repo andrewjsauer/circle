@@ -1,5 +1,5 @@
-import React, { useState, useEffect, memo } from "react";
-import { List, Text } from "react-native-paper";
+import React, { useEffect, memo } from "react";
+import analytics from "@react-native-firebase/analytics";
 
 import { Navigation } from "@types";
 import * as routes from "@constants/routes";
@@ -23,6 +23,16 @@ interface Props {
 
 const CoursesScreen = ({ navigation, route }: Props) => {
   const { meditation, name } = route.params;
+
+  useEffect(() => {
+    const logScreen = async () => {
+      await analytics().logScreenView({
+        screen_name: "CoursesScreen",
+      });
+    };
+
+    logScreen();
+  }, []);
 
   const lessons = meditationsByCourseType[meditation.id];
   return (

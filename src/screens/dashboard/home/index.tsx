@@ -1,5 +1,6 @@
-import React, { memo, useState } from "react";
+import React, { useEffect, memo, useState } from "react";
 import { useSelector } from "react-redux";
+import analytics from "@react-native-firebase/analytics";
 
 import { selectUserData, selectSubscriptions } from "@store/user/selectors";
 
@@ -44,15 +45,28 @@ const Home = ({ navigation }: any) => {
   const timeOfDay = getTimeOfDay();
   const name = userData?.name ? `${userData?.name}` : "Hello!";
 
-  const handleGetStarted = (meditation, isSessionsExpired) => {
+  useEffect(() => {
+    const logScreen = async () => {
+      await analytics().logScreenView({
+        screen_name: "DashboardScreen",
+      });
+    };
+
+    logScreen();
+  }, []);
+
+  const handleGetStarted = async (meditation, isSessionsExpired) => {
     if (isSessionsExpired && !isSubscribed) {
+      await analytics().logEvent("show_subscription_modal");
       return setShouldShowSubscriptionModal(true);
     }
 
     if (meditation.type === "course") {
+      await analytics().logEvent("course_started");
       return navigation.navigate(routes.COURSES_SCREEN, { meditation, name });
     }
 
+    await analytics().logEvent("meditation_started");
     navigation.navigate(routes.MEDITATION_BUILDER_SCREEN, { meditation, name });
   };
 

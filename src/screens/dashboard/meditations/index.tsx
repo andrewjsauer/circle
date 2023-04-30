@@ -2,6 +2,7 @@ import React, { useState, useEffect, memo } from "react";
 import { useSelector } from "react-redux";
 
 import firestore from "@react-native-firebase/firestore";
+import analytics from "@react-native-firebase/analytics";
 
 import { selectUserId, selectIsUserLoggedIn } from "@store/user/selectors";
 import * as routes from "@constants/routes";
@@ -23,6 +24,16 @@ const Meditations = ({ navigation }) => {
 
   const [meditations, setMeditations] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const logScreen = async () => {
+      await analytics().logScreenView({
+        screen_name: "SavedMeditationsScreen",
+      });
+    };
+
+    logScreen();
+  }, []);
 
   useEffect(() => {
     const subscriber = firestore()
@@ -58,7 +69,9 @@ const Meditations = ({ navigation }) => {
     return () => subscriber();
   }, []);
 
-  const handlePlay = (audioId) => {
+  const handlePlay = async (audioId) => {
+    await analytics().logEvent("play_meditation");
+
     navigation.navigate(routes.PLAYER_SCREEN, {
       audioId,
       isSavedMeditation: true,

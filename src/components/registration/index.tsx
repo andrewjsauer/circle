@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
+
 import auth from "@react-native-firebase/auth";
+import analytics from "@react-native-firebase/analytics";
 
 import { emailValidator, nameValidator } from "@utils";
 
@@ -38,12 +40,23 @@ const Registration = () => {
 
   const user = useSelector(selectFirebaseUser);
 
+  useEffect(() => {
+    const logScreen = async () => {
+      await analytics().logScreenView({
+        screen_name: "RegistrationScreen",
+      });
+    };
+
+    logScreen();
+  }, []);
+
   const onSendPressed = async () => {
     const nameError = nameValidator(displayName.value);
     const emailError = emailValidator(email.value);
     const firstNameError = nameValidator(firstName.value);
 
     if (firstNameError) {
+      await analytics().logEvent("First Name Error");
       setFirstName((prevFirstName) => ({
         ...prevFirstName,
         error: firstNameError,
@@ -53,6 +66,7 @@ const Registration = () => {
     }
 
     if (nameError) {
+      await analytics().logEvent("Display Name Error");
       setDisplayName((prevDisplayName) => ({
         ...prevDisplayName,
         error: nameError,
@@ -62,6 +76,7 @@ const Registration = () => {
     }
 
     if (emailError) {
+      await analytics().logEvent("Email Error");
       setEmail((prevEmail) => ({ ...prevEmail, error: emailError }));
       return;
     }
@@ -71,6 +86,7 @@ const Registration = () => {
     const isUsernameSuccessful = await checkUsername(displayName.value);
     if (!isUsernameSuccessful) {
       setIsLoading(false);
+      await analytics().logEvent("Username Error");
 
       const error = t("errors.displayNameTaken");
       setDisplayName((prevDisplayName) => ({
@@ -84,6 +100,7 @@ const Registration = () => {
     const isEmailSuccessful = await updateUserEmail(user, email.value);
     if (!isEmailSuccessful) {
       setIsLoading(false);
+      await analytics().logEvent("Email Error");
 
       const error = t("errors.emailAddressServer");
       setEmail((prevEmail) => ({ ...prevEmail, error }));
@@ -99,6 +116,7 @@ const Registration = () => {
 
     if (!isProfileSuccessful || !isAddProfileSuccessful) {
       setIsLoading(false);
+      await analytics().logEvent("Profile Error");
 
       const error = t("errors.displayNameServer");
       setDisplayName((prevDisplayName) => ({
@@ -112,6 +130,7 @@ const Registration = () => {
     const isFirstNameSuccessful = updateUser(user, firstName.value);
     if (!isFirstNameSuccessful) {
       setIsLoading(false);
+      await analytics().logEvent("First Name Error");
 
       const error = t("errors.firstNameServer");
       setFirstName((prevEmail) => ({ ...prevEmail, error }));
@@ -131,6 +150,7 @@ const Registration = () => {
       }),
     );
 
+    await analytics().logEvent("Registration Successful");
     setIsLoading(false);
   };
 

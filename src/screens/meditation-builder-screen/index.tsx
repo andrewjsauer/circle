@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { TouchableWithoutFeedback, Keyboard, Platform } from "react-native";
 import { useSelector } from "react-redux";
 import Filter from "bad-words";
 
+import analytics from "@react-native-firebase/analytics";
 import functions from "@react-native-firebase/functions";
 import firestore from "@react-native-firebase/firestore";
+import crashlytics from "@react-native-firebase/crashlytics";
 
 import CloseButton from "@components/close-button";
 import * as routes from "@constants/routes";
@@ -63,14 +65,30 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
   const isLastQuestion = currentQuestionIndex === questionsLength - 1;
   const isFirstQuestion = currentQuestionIndex === 0;
 
-  const handleOptionSelect = (questionId, optionValue, isTextInput = false) => {
+  useEffect(() => {
+    const logScreen = async () => {
+      await analytics().logScreenView({
+        screen_name: routes.MEDITATION_BUILDER_SCREEN,
+      });
+    };
+
+    logScreen();
+  }, []);
+
+  const handleOptionSelect = async (
+    questionId,
+    optionValue,
+    isTextInput = false,
+  ) => {
     if (isTextInput) {
       const maxWords = 120;
       const filter = new Filter();
 
       if (filter.isProfane(optionValue)) {
+        await analytics().logEvent("meditation_builder_inappropriate_content");
         return setTextInputError("Please avoid using inappropriate content.");
       } else if (optionValue.length > maxWords) {
+        await analytics().logEvent("meditation_builder_input_too_long");
         return setTextInputError("Please limit your input to 120 characters.");
       } else {
         setTextInputError("");
@@ -83,12 +101,15 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
     }));
   };
 
-  const handlePreviousQuestion = () => {
+  const handlePreviousQuestion = async () => {
+    await analytics().logEvent("meditation_builder_previous_question");
     setCurrentQuestionIndex(currentQuestionIndex - 1);
   };
 
   const handleNextQuestion = async () => {
     if (isLastQuestion) {
+      await analytics().logEvent("meditation_builder_submitted");
+
       setUploadMessage("Creating your meditation...");
       setIsUploading(true);
       setUploadError(null);
@@ -111,7 +132,9 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
         ({ data: contentData } = await functions().httpsCallable("getContent", {
           timeout: 5 * 60 * 1000,
         })({ prompt }));
-      } catch (error) {
+      } catch (error: any) {
+        crashlytics().recordError(error);
+
         setUploadError(
           `Looks like there was an error creating your meditation. Please try again later. Error: ${error}`,
         );
@@ -126,6 +149,7 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
           `Looks like there was an error creating your meditation. Please try again later. Error: ${error}`,
         );
         setIsUploading(false);
+        crashlytics().recordError(contentError);
         return;
       }
 
@@ -137,7 +161,9 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
           content,
           userId,
         }));
-      } catch (error) {
+      } catch (error: any) {
+        crashlytics().recordError(error);
+
         setUploadError(
           `Looks like there was an error turning your meditation into audio. Please try again. Error: ${error}`,
         );
@@ -152,6 +178,8 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
           `Looks like there was an error turning your meditation into audio. Please try again. Error: ${audioError}`,
         );
         setIsUploading(false);
+
+        crashlytics().recordError(audioError);
         return;
       }
 

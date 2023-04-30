@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 
+import crashlytics from "@react-native-firebase/crashlytics";
 import firestore from "@react-native-firebase/firestore";
 
 import { selectFirebaseUser } from "@store/user/selectors";
@@ -27,6 +28,7 @@ export const useGetUserData = () => {
       (error) => {
         console.error("Error fetching user data: ", error);
         setIsLoading(false);
+        crashlytics().recordError(error);
       },
     );
 
@@ -38,6 +40,7 @@ export const useGetUserData = () => {
       (error) => {
         console.error("Error fetching user data: ", error);
         setIsLoading(false);
+        crashlytics().recordError(error);
       },
     );
 
