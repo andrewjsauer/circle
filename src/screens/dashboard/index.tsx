@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 
 import { BottomNavigation, MD2Colors } from "react-native-paper";
 import { Navigation } from "@types";
-import backgroundImage from "@assets/background.png";
 
 import Home from "./home";
 import User from "./user";
@@ -55,7 +54,7 @@ const Dashboard = ({ navigation }: Props) => {
   });
 
   return isLoading ? (
-    <Layout source={backgroundImage}>
+    <Layout>
       <LoadingSpinner size="large" animating={true} color={MD2Colors.blue500} />
       <Subtitle variant="titleLarge">{t("fetchingYourData")}</Subtitle>
     </Layout>

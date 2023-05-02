@@ -44,9 +44,10 @@ export const updateUser = (user, firstName) => {
     });
 
     firestore().collection("subscriptions").doc(user.uid).set({
-      personalized: 1,
-      micro: 1,
       course: 1,
+      isSubscribed: false,
+      micro: 1,
+      personalized: 1,
     });
 
     return true;

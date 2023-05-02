@@ -1,7 +1,7 @@
 import styled from "styled-components/native";
 import { Text, ActivityIndicator } from "react-native-paper";
 
-export const Layout = styled.ImageBackground`
+export const Layout = styled.View`
   display: flex;
   justify-content: space-around;
   align-items: center;
@@ -9,7 +9,7 @@ export const Layout = styled.ImageBackground`
   position: relative;
 `;
 
-export const LoadingLayout = styled.ImageBackground`
+export const LoadingLayout = styled.View`
   display: flex;
   justify-content: center;
   align-items: center;
@@ -19,6 +19,13 @@ export const LoadingLayout = styled.ImageBackground`
 
 export const LoadingSpinner = styled(ActivityIndicator)`
   margin-bottom: 24px;
+`;
+
+export const LoadingText = styled(Text)`
+  font-size: 22px;
+  font-weight: 500;
+  text-align: center;
+  padding: 0 24px;
 `;
 
 export const AudioButtonView = styled.View`

@@ -3,7 +3,6 @@ import { View } from "react-native";
 import { useDispatch } from "react-redux";
 
 import crashlytics from "@react-native-firebase/crashlytics";
-import analytics from "@react-native-firebase/analytics";
 
 import PhoneInput from "react-native-phone-number-input";
 import auth from "@react-native-firebase/auth";
@@ -12,6 +11,7 @@ import { login } from "@store/user/slice";
 
 import * as routes from "@constants/routes";
 import { Navigation } from "@types";
+import { trackEvent, trackScreen } from "@utils/analytics";
 
 import TextInput from "@components/text-input";
 import BackButton from "@components/back-button";
@@ -49,13 +49,7 @@ const Auth = ({
   const phoneInputRef = useRef<PhoneInput>(null);
 
   useEffect(() => {
-    const logScreen = async () => {
-      await analytics().logScreenView({
-        screen_name: "AuthenticationScreen",
-      });
-    };
-
-    logScreen();
+    trackScreen("AuthenticationScreen");
   }, []);
 
   const signInWithPhoneNumber = async (number) => {
@@ -63,8 +57,7 @@ const Auth = ({
 
     const confirmation = await auth().signInWithPhoneNumber(number);
 
-    crashlytics().log("Phone Number Submitted");
-    await analytics().logEvent("Phone Number Submit", {
+    trackEvent("phone_number_submitted", {
       number,
     });
 
@@ -78,11 +71,11 @@ const Auth = ({
     try {
       await confirm.confirm(vcode);
     } catch (error) {
-      crashlytics().log("Invalid Verification Code");
+      crashlytics().recordError(error);
       onCode({ ...phoneNumber, error: t("errors.invalidCode") });
     }
 
-    await analytics().logEvent("Confirmed Verification Code");
+    trackEvent("confirmed_verification_code");
 
     const user = auth().currentUser;
     dispatch(login(user));
@@ -95,7 +88,7 @@ const Auth = ({
 
     if (!value) {
       onCode({ ...phoneNumber, error: t("errors.verificationCodeEmpty") });
-      crashlytics().log("Verification Code Empty");
+      trackEvent("verification_code_empty");
 
       return;
     }
@@ -109,12 +102,12 @@ const Auth = ({
 
     if (!value) {
       onPhoneNumber({ ...phoneNumber, error: t("errors.phoneNumberEmpty") });
-      crashlytics().log("Phone Number Empty");
+      trackEvent("phone_number_empty");
 
       return;
     } else if (!isValid) {
       onPhoneNumber({ ...phoneNumber, error: t("errors.phoneNumberInvalid") });
-      crashlytics().log("Phone Number Invalid");
+      trackEvent("phone_number_invalid");
 
       return;
     }

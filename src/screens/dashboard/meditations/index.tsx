@@ -2,10 +2,10 @@ import React, { useState, useEffect, memo } from "react";
 import { useSelector } from "react-redux";
 
 import firestore from "@react-native-firebase/firestore";
-import analytics from "@react-native-firebase/analytics";
 
 import { selectUserId, selectIsUserLoggedIn } from "@store/user/selectors";
 import * as routes from "@constants/routes";
+import { trackScreen, trackEvent } from "@utils/analytics";
 
 import MeditationItem from "./item";
 import {
@@ -26,13 +26,7 @@ const Meditations = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const logScreen = async () => {
-      await analytics().logScreenView({
-        screen_name: "SavedMeditationsScreen",
-      });
-    };
-
-    logScreen();
+    trackScreen("SavedMeditationsScreen");
   }, []);
 
   useEffect(() => {
@@ -43,7 +37,7 @@ const Meditations = ({ navigation }) => {
         if (!isUserLoggedIn) return;
         setIsLoading(true);
 
-        const meditationData = [];
+        const meditationData: any = [];
 
         querySnapshot.forEach((doc) => {
           const data = doc.data();
@@ -70,7 +64,7 @@ const Meditations = ({ navigation }) => {
   }, []);
 
   const handlePlay = async (audioId) => {
-    await analytics().logEvent("play_meditation");
+    trackEvent("play_meditation_request");
 
     navigation.navigate(routes.PLAYER_SCREEN, {
       audioId,

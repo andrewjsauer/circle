@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { Text } from "react-native-paper";
 
 import TrackPlayer, { State } from "react-native-track-player";
-import analytics from "@react-native-firebase/analytics";
 
 import * as routes from "@constants/routes";
 
 import CloseButton from "@components/close-button";
-import backgroundImage from "@assets/background.png";
 import Icon from "react-native-vector-icons/Feather";
 import { Navigation } from "@types";
+import { trackEvent, trackScreen } from "@utils/analytics";
 
 import { selectUserId } from "@store/user/selectors";
 
@@ -19,6 +17,7 @@ import {
   AudioTime,
   LoadingLayout,
   LoadingSpinner,
+  LoadingText,
   Layout,
 } from "./styles";
 import AudioButton from "./audio-button";
@@ -63,13 +62,7 @@ const PlayerScreen = ({ navigation, route }: Props) => {
   };
 
   useEffect(() => {
-    const logScreen = async () => {
-      await analytics().logScreenView({
-        screen_name: routes.PLAYER_SCREEN,
-      });
-    };
-
-    logScreen();
+    trackScreen(routes.PLAYER_SCREEN);
   }, []);
 
   const { playbackState, isPlayerReady, isLoading, duration, position } =
@@ -95,18 +88,18 @@ const PlayerScreen = ({ navigation, route }: Props) => {
   const handlePlayPause = async () => {
     if (playbackState === State.Playing) {
       await TrackPlayer.pause();
-      await analytics().logEvent("pause_meditation");
+      trackEvent("pause_meditation");
     } else {
       await TrackPlayer.play();
-      await analytics().logEvent("play_meditation");
+      trackEvent("play_meditation");
     }
   };
 
   if (isLoading || !duration || !isPlayerReady) {
     return (
-      <LoadingLayout source={backgroundImage}>
+      <LoadingLayout>
         <LoadingSpinner size={50} />
-        <Text variant="titleMedium">Loading meditation...</Text>
+        <LoadingText>Loading your personalized meditation...</LoadingText>
       </LoadingLayout>
     );
   }
@@ -115,7 +108,7 @@ const PlayerScreen = ({ navigation, route }: Props) => {
   return (
     <>
       <CloseButton onPress={handleClose} />
-      <Layout source={backgroundImage}>
+      <Layout>
         <AudioView>
           <Icon name="clock" size={34} color="#000" />
           <AudioTime>{formatDuration(timeLeft)}</AudioTime>

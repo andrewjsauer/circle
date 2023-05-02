@@ -1,10 +1,10 @@
 import React, { useEffect, memo } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { RadioButton } from "react-native-paper";
 
 import firestore from "@react-native-firebase/firestore";
 import auth from "@react-native-firebase/auth";
-import analytics from "@react-native-firebase/analytics";
+import crashlytics from "@react-native-firebase/crashlytics";
 
 import {
   selectUserId,
@@ -12,8 +12,10 @@ import {
   selectUserData,
   selectSubscriptions,
 } from "@store/user/selectors";
+import { logout } from "@store/user/slice";
 
 import Button from "@components/button";
+import { trackScreen, trackEvent } from "@utils/analytics";
 
 import {
   Container,
@@ -26,36 +28,40 @@ import {
 } from "./styles";
 
 const User = () => {
+  const dispatch = useDispatch();
+
   const userId: string = useSelector(selectUserId);
   const userData = useSelector(selectUserData);
   const firebaseUserData = useSelector(selectFirebaseUser);
   const subscriptions = useSelector(selectSubscriptions);
 
   useEffect(() => {
-    const logScreen = async () => {
-      await analytics().logScreenView({
-        screen_name: "UserScreen",
-      });
-    };
-
-    logScreen();
+    trackScreen("UserScreen");
   }, []);
 
   const handleLogout = async () => {
+    trackEvent("logout_clicked");
+
     try {
       await auth().signOut();
     } catch (error) {
+      crashlytics().recordError(error);
       console.error("Error logging out:", JSON.stringify(error));
     }
+
+    dispatch(logout());
   };
 
   const handleVoicePreferenceChange = async (value) => {
+    trackEvent("voice_preference_changed");
+
     try {
       await firestore().collection("users").doc(userId).update({
         voice: value,
       });
     } catch (error) {
-      console.log("error", error);
+      crashlytics().recordError(error);
+      console.log("Change voice preference error", error);
     }
   };
 
@@ -67,15 +73,15 @@ const User = () => {
         </TitleSection>
         <Section isRow>
           <Subtitle isBold>Name: </Subtitle>
-          <Subtitle>{userData.name}</Subtitle>
+          <Subtitle>{userData?.name}</Subtitle>
         </Section>
         <Section isRow>
           <Subtitle isBold>Username: </Subtitle>
-          <Subtitle>{firebaseUserData.displayName}</Subtitle>
+          <Subtitle>{firebaseUserData?.displayName}</Subtitle>
         </Section>
         <Section isRow>
           <Subtitle isBold>Email: </Subtitle>
-          <Subtitle>{firebaseUserData.email}</Subtitle>
+          <Subtitle>{firebaseUserData?.email}</Subtitle>
         </Section>
         <Section isRow>
           <Subtitle isBold>Circle Plus Subscriber: </Subtitle>

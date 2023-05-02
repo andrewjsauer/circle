@@ -4,9 +4,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 
 import auth from "@react-native-firebase/auth";
-import analytics from "@react-native-firebase/analytics";
 
 import { emailValidator, nameValidator } from "@utils";
+import { trackEvent } from "@utils/analytics";
 
 import { selectFirebaseUser } from "@store/user/selectors";
 import { login, updateUserData } from "@store/user/slice";
@@ -56,7 +56,7 @@ const Registration = () => {
     const firstNameError = nameValidator(firstName.value);
 
     if (firstNameError) {
-      await analytics().logEvent("First Name Error");
+      trackEvent("first_name_error");
       setFirstName((prevFirstName) => ({
         ...prevFirstName,
         error: firstNameError,
@@ -66,7 +66,7 @@ const Registration = () => {
     }
 
     if (nameError) {
-      await analytics().logEvent("Display Name Error");
+      trackEvent("display_name_error");
       setDisplayName((prevDisplayName) => ({
         ...prevDisplayName,
         error: nameError,
@@ -76,7 +76,7 @@ const Registration = () => {
     }
 
     if (emailError) {
-      await analytics().logEvent("Email Error");
+      trackEvent("email_error");
       setEmail((prevEmail) => ({ ...prevEmail, error: emailError }));
       return;
     }
@@ -86,7 +86,7 @@ const Registration = () => {
     const isUsernameSuccessful = await checkUsername(displayName.value);
     if (!isUsernameSuccessful) {
       setIsLoading(false);
-      await analytics().logEvent("Username Error");
+      trackEvent("username_error");
 
       const error = t("errors.displayNameTaken");
       setDisplayName((prevDisplayName) => ({
@@ -100,7 +100,7 @@ const Registration = () => {
     const isEmailSuccessful = await updateUserEmail(user, email.value);
     if (!isEmailSuccessful) {
       setIsLoading(false);
-      await analytics().logEvent("Email Error");
+      trackEvent("update_email_error");
 
       const error = t("errors.emailAddressServer");
       setEmail((prevEmail) => ({ ...prevEmail, error }));
@@ -116,7 +116,7 @@ const Registration = () => {
 
     if (!isProfileSuccessful || !isAddProfileSuccessful) {
       setIsLoading(false);
-      await analytics().logEvent("Profile Error");
+      trackEvent("update_profile_error");
 
       const error = t("errors.displayNameServer");
       setDisplayName((prevDisplayName) => ({
@@ -130,7 +130,7 @@ const Registration = () => {
     const isFirstNameSuccessful = updateUser(user, firstName.value);
     if (!isFirstNameSuccessful) {
       setIsLoading(false);
-      await analytics().logEvent("First Name Error");
+      trackEvent("update_first_name_error");
 
       const error = t("errors.firstNameServer");
       setFirstName((prevEmail) => ({ ...prevEmail, error }));
@@ -150,7 +150,7 @@ const Registration = () => {
       }),
     );
 
-    await analytics().logEvent("Registration Successful");
+    trackEvent("registration_success");
     setIsLoading(false);
   };
 

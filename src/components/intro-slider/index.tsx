@@ -1,29 +1,28 @@
 import React, { useEffect, useRef } from "react";
-import { StyleSheet, View, Image } from "react-native";
 import AppIntroSlider from "react-native-app-intro-slider";
-import { Text, useTheme } from "react-native-paper";
+import { useTheme } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
-import { IS_IOS } from "@utils";
+import { TextWrapper, Description, Title, SliderView, Image } from "./styles";
 
 const getSlides = (t) => [
   {
     key: 1,
     title: t("slider.one.title"),
     description: t("slider.one.description"),
-    image: require("../assets/slider-1.png"),
+    image: require("../../assets/slider-1.png"),
   },
   {
     key: 2,
     title: t("slider.two.title"),
     description: t("slider.two.description"),
-    image: require("../assets/slider-2.png"),
+    image: require("../../assets/slider-2.png"),
   },
   {
     key: 3,
     title: t("slider.three.title"),
     description: t("slider.three.description"),
-    image: require("../assets/slider-3.png"),
+    image: require("../../assets/slider-3.png"),
   },
 ];
 
@@ -56,15 +55,13 @@ const IntroSlider = () => {
 
   const renderItem = ({ item }: { item: Slide }) => {
     return (
-      <View style={styles.slide}>
-        <Image source={item.image} style={styles.image} />
-        <Text variant="headlineMedium" style={styles.title}>
-          {item.title}
-        </Text>
-        <Text variant="titleMedium" style={styles.description}>
-          {item.description}
-        </Text>
-      </View>
+      <SliderView>
+        <Image resizeMode="contain" source={item.image} />
+        <TextWrapper>
+          <Title>{item.title}</Title>
+          <Description>{item.description}</Description>
+        </TextWrapper>
+      </SliderView>
     );
   };
 
@@ -81,23 +78,4 @@ const IntroSlider = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  slide: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  image: {
-    marginVertical: 32,
-  },
-  title: {
-    textAlign: "center",
-    fontWeight: IS_IOS ? "600" : "bold",
-  },
-  description: {
-    textAlign: "center",
-    marginTop: 16,
-    color: "rgba(0, 0, 0, 0.54)",
-  },
-});
 export default IntroSlider;

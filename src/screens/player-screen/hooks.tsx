@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import storage from "@react-native-firebase/storage";
 
-import analytics from "@react-native-firebase/analytics";
 import crashlytics from "@react-native-firebase/crashlytics";
 
 import TrackPlayer, {
@@ -13,6 +12,8 @@ import TrackPlayer, {
   AppKilledPlaybackBehavior,
   Capability,
 } from "react-native-track-player";
+
+import { trackEvent } from "@utils/analytics";
 
 const setupPlayer = async () => {
   const setup = async () => {
@@ -98,7 +99,7 @@ export const usePlayer = (audioId, onClose) => {
         const filePath = `audio/${audioId}.mp3`;
         const url = await storage().ref(filePath).getDownloadURL();
 
-        await analytics().logEvent("audio_played", {
+        trackEvent("audio_played", {
           audioId,
         });
 

@@ -13,11 +13,17 @@ export const useGetUserData = () => {
   const user = useSelector(selectFirebaseUser);
 
   useEffect(() => {
+    if (!user.uid) {
+      console.log("No user uid");
+      return;
+    }
+
     setIsLoading(true);
 
     const subscriptionsRef = firestore()
       .collection("subscriptions")
       .doc(user.uid);
+
     const userRef = firestore().collection("users").doc(user.uid);
 
     const unsubscribeSubscriptions = subscriptionsRef.onSnapshot(
@@ -26,9 +32,9 @@ export const useGetUserData = () => {
         setIsLoading(false);
       },
       (error) => {
-        console.error("Error fetching user data: ", error);
+        console.error("Error subscriptions: ", error);
         setIsLoading(false);
-        crashlytics().recordError(error);
+        crashlytics().log(error);
       },
     );
 
@@ -38,9 +44,9 @@ export const useGetUserData = () => {
         setIsLoading(false);
       },
       (error) => {
-        console.error("Error fetching user data: ", error);
+        console.error("Error user: ", error);
         setIsLoading(false);
-        crashlytics().recordError(error);
+        crashlytics().log(error);
       },
     );
 

@@ -1,3 +1,4 @@
+/* eslint-disable operator-linebreak */
 /* eslint-disable max-len */
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
@@ -5,6 +6,7 @@ import * as admin from "firebase-admin";
 import { defineSecret } from "firebase-functions/params";
 
 import * as ssmlCheck from "ssml-check";
+import axios from "axios";
 
 import { v4 as uuidv4 } from "uuid";
 import { Configuration, OpenAIApi } from "openai";
@@ -22,6 +24,7 @@ const bucket = admin.storage().bucket();
 const openApiKey = defineSecret("OPEN_AI_API_KEY");
 const awsAccessKey = defineSecret("AWS_TEXT_TO_SPEECH_ACCESS_KEY");
 const awsSecretKey = defineSecret("AWS_TEXT_TO_SPEECH_KEY");
+const appleSharedSecret = defineSecret("APPLE_SHARED_SECRET");
 
 const configuration = new Configuration({
   apiKey: process.env.OPEN_AI_API_KEY,
@@ -136,6 +139,52 @@ export const getAudio = functions
 
       functions.logger.info("Audio uploaded successfully");
       return { audioId };
+    } catch (error: any) {
+      if (error.response) {
+        functions.logger.error(`Error status ${error.response.status}`);
+        functions.logger.error(
+          `Error data ${JSON.stringify(error.response.data)}`,
+        );
+      } else {
+        functions.logger.error(`Error message ${error}`);
+      }
+
+      return { error: JSON.stringify(error) };
+    }
+  });
+
+export const validateReceipt = functions
+  .runWith({ secrets: [appleSharedSecret] })
+  .https.onCall(async (data, context) => {
+    if (!context.auth) {
+      throw new functions.https.HttpsError(
+        "unauthenticated",
+        "Endpoint requires authentication!",
+      );
+    }
+
+    const { receipt, isTest } = data;
+
+    const url = isTest
+      ? "https://sandbox.itunes.apple.com/verifyReceipt"
+      : "https://buy.itunes.apple.com/verifyReceipt";
+
+    const headers = {
+      "User-Agent": "Circle Meditation/1.0",
+      "Content-Type": "application/json",
+    };
+
+    const body = {
+      "receipt-data": receipt,
+      password: process.env.APPLE_SHARED_SECRET,
+      "exclude-old-transactions": true,
+    };
+
+    try {
+      const deliveryResult = await axios.post(url, body, { headers });
+      functions.logger.info("Apple response", deliveryResult);
+
+      return { deliveryResult };
     } catch (error: any) {
       if (error.response) {
         functions.logger.error(`Error status ${error.response.status}`);

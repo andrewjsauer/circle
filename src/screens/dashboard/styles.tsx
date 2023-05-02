@@ -2,7 +2,7 @@ import styled from "styled-components/native";
 import { Text, ActivityIndicator } from "react-native-paper";
 import Button from "@components/button";
 
-export const Layout = styled.ImageBackground`
+export const Layout = styled.View`
   display: flex;
   justify-content: center;
   align-items: center;

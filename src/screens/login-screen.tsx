@@ -1,6 +1,7 @@
 import React, { memo, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import analytics from "@react-native-firebase/analytics";
+
+import { trackScreen } from "@utils/analytics";
 
 import {
   selectIsUserLoggedIn,
@@ -28,13 +29,7 @@ const LoginScreen = ({ navigation }: Props) => {
   const isUserAlreadyRegistered = useSelector(selectIsUserAlreadyRegistered);
 
   useEffect(() => {
-    const logScreen = async () => {
-      await analytics().logScreenView({
-        screen_name: routes.LOGIN_SCREEN,
-      });
-    };
-
-    logScreen();
+    trackScreen(routes.LOGIN_SCREEN);
   }, []);
 
   useEffect(() => {

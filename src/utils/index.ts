@@ -6,3 +6,4 @@ export * from "./styles";
 export * from "./validations";
 export * from "./constants";
 export * from "./dates";
+export * from "./analytics";

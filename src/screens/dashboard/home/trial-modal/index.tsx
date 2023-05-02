@@ -4,7 +4,12 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 
 import { CloseButton, Description, Title, SubscribeButton } from "./styles";
 
-const TrialModal = ({ isVisible, onClose, onSubscribe }: any) => {
+const TrialModal = ({
+  isVisible,
+  onClose,
+  onSubscribe,
+  isSubscribing,
+}: any) => {
   return (
     <Portal>
       <Dialog
@@ -26,7 +31,13 @@ const TrialModal = ({ isVisible, onClose, onSubscribe }: any) => {
             </Description>
           </Dialog.Content>
           <Dialog.Actions>
-            <SubscribeButton onPress={onSubscribe}>Go Plus</SubscribeButton>
+            <SubscribeButton
+              loading={isSubscribing}
+              disabled={isSubscribing}
+              onPress={onSubscribe}
+            >
+              Go Plus
+            </SubscribeButton>
           </Dialog.Actions>
         </>
       </Dialog>

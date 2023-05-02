@@ -3,7 +3,7 @@ import { StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
-import analytics from "@react-native-firebase/analytics";
+import { trackScreen, trackEvent } from "@utils/analytics";
 
 import Background from "@components/background";
 import Button from "@components/button";
@@ -21,22 +21,16 @@ const HomeScreen = ({ navigation }: Props) => {
   const { t } = useTranslation();
 
   useEffect(() => {
-    const logScreen = async () => {
-      await analytics().logScreenView({
-        screen_name: routes.HOME_SCREEN,
-      });
-    };
-
-    logScreen();
+    trackScreen(routes.HOME_SCREEN);
   }, []);
 
   const handleLoginPress = async () => {
-    await analytics().logEvent("login_button_pressed");
+    trackEvent("login_button_pressed");
     navigation.navigate(routes.LOGIN_SCREEN);
   };
 
   const handleRegistrationPress = async () => {
-    await analytics().logEvent("registration_button_pressed");
+    trackEvent("registration_button_pressed");
     navigation.navigate(routes.REGISTER_SCREEN);
   };
 
@@ -85,7 +79,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     display: "flex",
     justifyContent: "center",
-    marginVertical: 30,
+    marginTop: 20,
   },
   button: {
     marginBottom: 10,

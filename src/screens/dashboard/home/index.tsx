@@ -1,8 +1,15 @@
 import React, { useEffect, memo, useState } from "react";
 import { useSelector } from "react-redux";
-import analytics from "@react-native-firebase/analytics";
 
-import { selectUserData, selectSubscriptions } from "@store/user/selectors";
+import crashlytics from "@react-native-firebase/crashlytics";
+
+import { requestSubscription, getSubscriptions } from "react-native-iap";
+
+import {
+  selectUserData,
+  selectNumOfSubscribedSessionsLeft,
+  selectIsSubscribed,
+} from "@store/user/selectors";
 
 import * as routes from "@constants/routes";
 import {
@@ -13,6 +20,7 @@ import {
   personalizedMeditation,
 } from "@constants/meditations";
 import { getTimeOfDay } from "@utils";
+import { trackScreen, trackEvent } from "@utils/analytics";
 
 import TrialModal from "./trial-modal";
 import TrialLock from "./trial-lock";
@@ -36,50 +44,69 @@ import {
 } from "./styles";
 
 const Home = ({ navigation }: any) => {
+  const [isSubscribing, setIsSubscribing] = useState(false);
   const [shouldShowSubscriptionModal, setShouldShowSubscriptionModal] =
     useState(false);
 
   const userData = useSelector(selectUserData);
-  const userSubscriptions = useSelector(selectSubscriptions);
+  const userSubscriptions = useSelector(selectNumOfSubscribedSessionsLeft);
+  const isSubscribed = useSelector(selectIsSubscribed);
 
   const timeOfDay = getTimeOfDay();
   const name = userData?.name ? `${userData?.name}` : "Hello!";
 
   useEffect(() => {
-    const logScreen = async () => {
-      await analytics().logScreenView({
-        screen_name: "DashboardScreen",
-      });
-    };
-
-    logScreen();
+    trackScreen("DashboardScreen");
   }, []);
 
   const handleGetStarted = async (meditation, isSessionsExpired) => {
     if (isSessionsExpired && !isSubscribed) {
-      await analytics().logEvent("show_subscription_modal");
+      trackEvent("show_subscription_modal");
       return setShouldShowSubscriptionModal(true);
     }
 
     if (meditation.type === "course") {
-      await analytics().logEvent("course_started");
+      trackEvent("course_started");
       return navigation.navigate(routes.COURSES_SCREEN, { meditation, name });
     }
 
-    await analytics().logEvent("meditation_started");
+    trackEvent("meditation_started");
     navigation.navigate(routes.MEDITATION_BUILDER_SCREEN, { meditation, name });
   };
 
-  const { isSubscribed, personalized, micro, course }: any = userSubscriptions;
+  const handleSubscribe = async () => {
+    trackEvent("subscription_started");
+    setIsSubscribing(true);
+
+    try {
+      const [{ productId }] = await getSubscriptions({
+        skus: ["circle_plus_version_1"],
+      });
+
+      await requestSubscription({
+        sku: productId,
+      });
+    } catch (err) {
+      crashlytics().recordError(err);
+      console.log("Error subscribing", err);
+    }
+
+    if (shouldShowSubscriptionModal) {
+      setShouldShowSubscriptionModal(false);
+    }
+
+    setIsSubscribing(false);
+    trackEvent("subscription_ended");
+  };
+
+  const { personalized, micro, course }: any = userSubscriptions;
   return (
     <>
       <TrialModal
         isVisible={shouldShowSubscriptionModal}
         onClose={() => setShouldShowSubscriptionModal(false)}
-        onSubscribe={() => {
-          setShouldShowSubscriptionModal(false);
-          navigation.navigate(routes);
-        }}
+        onSubscribe={handleSubscribe}
+        isSubscribing={isSubscribing}
       />
       <Layout>
         <Container>
@@ -94,7 +121,13 @@ const Home = ({ navigation }: any) => {
                 Get unlimited access to personalized meditations, micro hits,
                 and courses.
               </TrialText>
-              <TrialButton>Go Plus</TrialButton>
+              <TrialButton
+                loading={isSubscribing}
+                disabled={isSubscribing}
+                onPress={handleSubscribe}
+              >
+                Go Plus
+              </TrialButton>
             </TrialWrapper>
           ) : null}
           <Section>

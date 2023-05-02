@@ -1,6 +1,5 @@
 import React, { memo, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import analytics from "@react-native-firebase/analytics";
 
 import {
   selectIsUserAlreadyRegistered,
@@ -13,6 +12,7 @@ import Registration from "@components/registration";
 
 import * as routes from "@constants/routes";
 import { Navigation } from "@types";
+import { trackScreen } from "@utils/analytics";
 
 type Props = {
   navigation: Navigation;
@@ -30,13 +30,7 @@ const RegisterScreen = ({ navigation }: Props) => {
   const isUserAlreadyRegistered = useSelector(selectIsUserAlreadyRegistered);
 
   useEffect(() => {
-    const logScreen = async () => {
-      await analytics().logScreenView({
-        screen_name: routes.REGISTER_SCREEN,
-      });
-    };
-
-    logScreen();
+    trackScreen(routes.REGISTER_SCREEN);
   }, []);
 
   useEffect(() => {

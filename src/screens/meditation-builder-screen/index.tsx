@@ -3,7 +3,6 @@ import { TouchableWithoutFeedback, Keyboard, Platform } from "react-native";
 import { useSelector } from "react-redux";
 import Filter from "bad-words";
 
-import analytics from "@react-native-firebase/analytics";
 import functions from "@react-native-firebase/functions";
 import firestore from "@react-native-firebase/firestore";
 import crashlytics from "@react-native-firebase/crashlytics";
@@ -14,6 +13,7 @@ import * as routes from "@constants/routes";
 import { Navigation } from "@types";
 import { selectUserData, selectUserId } from "@store/user/selectors";
 import { getTimeOfDay } from "@utils";
+import { trackScreen, trackEvent } from "@utils/analytics";
 
 import Dropdown from "./dropdown";
 import TextInput from "./text-input";
@@ -66,13 +66,7 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
   const isFirstQuestion = currentQuestionIndex === 0;
 
   useEffect(() => {
-    const logScreen = async () => {
-      await analytics().logScreenView({
-        screen_name: routes.MEDITATION_BUILDER_SCREEN,
-      });
-    };
-
-    logScreen();
+    trackScreen(routes.MEDITATION_BUILDER_SCREEN);
   }, []);
 
   const handleOptionSelect = async (
@@ -85,10 +79,10 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
       const filter = new Filter();
 
       if (filter.isProfane(optionValue)) {
-        await analytics().logEvent("meditation_builder_inappropriate_content");
+        trackEvent("meditation_builder_inappropriate_content");
         return setTextInputError("Please avoid using inappropriate content.");
       } else if (optionValue.length > maxWords) {
-        await analytics().logEvent("meditation_builder_input_too_long");
+        trackEvent("meditation_builder_input_too_long");
         return setTextInputError("Please limit your input to 120 characters.");
       } else {
         setTextInputError("");
@@ -102,13 +96,13 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
   };
 
   const handlePreviousQuestion = async () => {
-    await analytics().logEvent("meditation_builder_previous_question");
+    trackEvent("meditation_builder_previous_question");
     setCurrentQuestionIndex(currentQuestionIndex - 1);
   };
 
   const handleNextQuestion = async () => {
     if (isLastQuestion) {
-      await analytics().logEvent("meditation_builder_submitted");
+      trackEvent("meditation_builder_submitted");
 
       setUploadMessage("Creating your meditation...");
       setIsUploading(true);
@@ -149,7 +143,7 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
           `Looks like there was an error creating your meditation. Please try again later. Error: ${error}`,
         );
         setIsUploading(false);
-        crashlytics().recordError(contentError);
+        crashlytics().log(contentError);
         return;
       }
 
@@ -179,12 +173,12 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
         );
         setIsUploading(false);
 
-        crashlytics().recordError(audioError);
+        crashlytics().log(audioError);
         return;
       }
 
       navigation.navigate(routes.PLAYER_SCREEN, {
-        data: { ...payload, usage },
+        data: { ...payload, content, usage },
         audioId,
         isSavedMeditation: false,
       });
@@ -204,8 +198,8 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
       <>
         <CompleteTitle>{uploadMessage}</CompleteTitle>
         <CompleteSubTitle>
-          Note: We use a the latest AI models to create your personalized
-          meditation so please allow up to a minute or so.
+          We use a the latest AI models to create your personalized meditation
+          which can be slow, so please allow up to a minute or so.
         </CompleteSubTitle>
         <BreathingCircleView>
           <BreathingCircle />

@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
-import analytics from "@react-native-firebase/analytics";
+
+import { trackScreen } from "@utils/analytics";
 
 import { StyleSheet, View } from "react-native";
 import { WebView } from "react-native-webview";
@@ -12,13 +13,7 @@ type Props = {
 
 const Browser = ({ route }: Props) => {
   useEffect(() => {
-    const logScreen = async () => {
-      await analytics().logScreenView({
-        screen_name: routes.BROWSER_SCREEN,
-      });
-    };
-
-    logScreen();
+    trackScreen(routes.BROWSER_SCREEN);
   }, []);
 
   return (

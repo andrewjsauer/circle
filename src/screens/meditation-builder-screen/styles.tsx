@@ -88,7 +88,7 @@ export const LoadingSpinner = styled(ActivityIndicator)`
 `;
 
 export const CompleteTitle = styled(Text)`
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 600;
   text-align: center;
   width: 100%;
@@ -101,10 +101,11 @@ export const CompleteSubTitle = styled(Text)`
   margin-top: 12px;
   width: 100%;
   padding: 0 12px;
+  text-align: center;
 `;
 
 export const BreathingText = styled(Text)`
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 600;
   text-align: center;
   margin-top: 40px;

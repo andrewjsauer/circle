@@ -26,3 +26,17 @@ export const selectUserDisplayName = createSelector(
   selectFirebaseUser,
   (isUserLoggedIn, user) => isUserLoggedIn && user.displayName,
 );
+
+export const selectIsSubscribed = createSelector(
+  selectSubscriptions,
+  (subscriptions) => subscriptions?.isSubscribed ?? false,
+);
+
+export const selectNumOfSubscribedSessionsLeft = createSelector(
+  selectSubscriptions,
+  (subscriptions) => ({
+    personalized: subscriptions?.personalized ?? 1,
+    micro: subscriptions?.micro ?? 1,
+    course: subscriptions?.course ?? 1,
+  }),
+);

@@ -18,7 +18,8 @@ class ErrorBoundary extends React.Component<Props, State> {
   };
 
   public componentDidCatch(_error: Error): void {
-    crashlytics().recordError(_error);
+    console.log("componentDidCatch", _error);
+    crashlytics().recordError(new Error(_error));
   }
 
   public static getDerivedStateFromError(_: Error): State {

@@ -31,8 +31,23 @@ export const onSave = async (
     });
   }
 
+  const { content } = data;
+  const meditationContentCollectionRef = firestore()
+    .collection("meditations")
+    .doc(id)
+    .collection("content")
+    .doc("content");
+  batch.set(meditationContentCollectionRef, { content });
+
+  const meditationData = {
+    ...data,
+    feedback,
+  };
+
+  delete meditationData.content;
+
   const meditationDocRef = firestore().collection("meditations").doc(id);
-  batch.set(meditationDocRef, { ...data, feedback });
+  batch.set(meditationDocRef, { ...meditationData });
 
   await batch.commit();
 };

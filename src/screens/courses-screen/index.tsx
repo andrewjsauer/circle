@@ -1,5 +1,4 @@
 import React, { useEffect, memo } from "react";
-import analytics from "@react-native-firebase/analytics";
 
 import { Navigation } from "@types";
 import * as routes from "@constants/routes";
@@ -7,6 +6,7 @@ import * as routes from "@constants/routes";
 import BackButton from "@components/back-button";
 
 import { meditationsByCourseType } from "@constants/meditations";
+import { trackScreen } from "@utils/analytics";
 
 import CardCourse from "../dashboard/home/card-course";
 import { CardWrapper, LessonList, Content, Layout, Title } from "./styles";
@@ -25,13 +25,7 @@ const CoursesScreen = ({ navigation, route }: Props) => {
   const { meditation, name } = route.params;
 
   useEffect(() => {
-    const logScreen = async () => {
-      await analytics().logScreenView({
-        screen_name: "CoursesScreen",
-      });
-    };
-
-    logScreen();
+    trackScreen(routes.COURSES_SCREEN);
   }, []);
 
   const lessons = meditationsByCourseType[meditation.id];
