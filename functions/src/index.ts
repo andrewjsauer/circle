@@ -7,6 +7,7 @@ import { defineSecret } from "firebase-functions/params";
 
 import * as ssmlCheck from "ssml-check";
 import axios from "axios";
+import { camelizeKeys } from "humps";
 
 import { v4 as uuidv4 } from "uuid";
 import { Configuration, OpenAIApi } from "openai";
@@ -20,6 +21,8 @@ admin.initializeApp({
 });
 
 const bucket = admin.storage().bucket();
+const storage = admin.firestore();
+const { FieldValue } = admin.firestore;
 
 const openApiKey = defineSecret("OPEN_AI_API_KEY");
 const awsAccessKey = defineSecret("AWS_TEXT_TO_SPEECH_ACCESS_KEY");
@@ -163,39 +166,107 @@ export const validateReceipt = functions
       );
     }
 
-    const { receipt, isTest } = data;
+    const { receipt, isTest, userId, isSubscribed } = data;
+    functions.logger.info("Validating receipt", JSON.stringify(data));
+
+    let result;
 
     const url = isTest
       ? "https://sandbox.itunes.apple.com/verifyReceipt"
       : "https://buy.itunes.apple.com/verifyReceipt";
 
-    const headers = {
-      "User-Agent": "Circle Meditation/1.0",
-      "Content-Type": "application/json",
-    };
-
-    const body = {
+    const request = {
       "receipt-data": receipt,
       password: process.env.APPLE_SHARED_SECRET,
-      "exclude-old-transactions": true,
+      exclude_old_transactions: true,
     };
 
-    try {
-      const deliveryResult = await axios.post(url, body, { headers });
-      functions.logger.info("Apple response", deliveryResult);
+    functions.logger.info("Apple request", request);
 
-      return { deliveryResult };
+    try {
+      const response = await axios.post(url, request);
+      result = camelizeKeys(response.data);
+
+      functions.logger.info("Apple response", result);
     } catch (error: any) {
-      if (error.response) {
-        functions.logger.error(`Error status ${error.response.status}`);
-        functions.logger.error(
-          `Error data ${JSON.stringify(error.response.data)}`,
-        );
+      functions.logger.error(`Error ${error}`);
+      return { error: JSON.stringify(error) };
+    }
+
+    if (result.status === 0) {
+      functions.logger.info("Receipt is valid");
+
+      if (!isSubscribed) {
+        try {
+          const subscriptionRef = storage
+            .collection("subscriptions")
+            .doc(userId);
+          await subscriptionRef.set(
+            {
+              isSubscribed: true,
+            },
+            { merge: true },
+          );
+
+          const subscriptionCollectionRef = storage
+            .collection("subscriptions")
+            .doc(userId)
+            .collection("subscriptions")
+            .doc();
+          await subscriptionCollectionRef.set(
+            {
+              subscriptions: FieldValue.arrayUnion(result),
+            },
+            { merge: true },
+          );
+        } catch (error: any) {
+          functions.logger.error(`Error updating receipt: ${error}`);
+          return { error: JSON.stringify(error) };
+        }
       } else {
-        functions.logger.error(`Error message ${error}`);
+        functions.logger.info("User already subscribed");
       }
 
-      return { error: JSON.stringify(error) };
+      return true;
+    } else if (result.status === 21006) {
+      functions.logger.info("Receipt is valid, but subscription has expired");
+
+      try {
+        const subscriptionRef = storage.collection("subscriptions").doc(userId);
+        await subscriptionRef.set({ isSubscribed: false }, { merge: true });
+      } catch (error: any) {
+        functions.logger.error(`Error updating subscription: ${error}`);
+        return { error: JSON.stringify(error) };
+      }
+
+      return { error: "Subscription has expired" };
+    } else if (result.status === 21007 || result.status === 21008) {
+      functions.logger.info("Receipt is invalid or could not be authenticated");
+
+      try {
+        const subscriptionRef = storage.collection("subscriptions").doc(userId);
+        await subscriptionRef.set({ isSubscribed: false }, { merge: true });
+      } catch (error: any) {
+        functions.logger.error(`Error updating subscription: ${error}`);
+        return { error: JSON.stringify(error) };
+      }
+
+      return { error: "Receipt is invalid or could not be authenticated" };
+    } else if (result.status === 21100 || result.status === 21199) {
+      functions.logger.info("Internal error occurred");
+      return { error: "Internal error occurred" };
+    } else if (result.status === 21010) {
+      functions.logger.info("Subscription has been cancelled");
+
+      try {
+        const subscriptionRef = storage.collection("subscriptions").doc(userId);
+        await subscriptionRef.set({ isSubscribed: false }, { merge: true });
+      } catch (error: any) {
+        functions.logger.error(`Error updating subscription: ${error}`);
+        return { error: JSON.stringify(error) };
+      }
+
+      return { error: "Subscription has been cancelled" };
     }
   });
 

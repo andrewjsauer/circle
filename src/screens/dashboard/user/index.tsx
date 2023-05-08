@@ -84,8 +84,10 @@ const User = () => {
           <Subtitle>{firebaseUserData?.email}</Subtitle>
         </Section>
         <Section isRow>
-          <Subtitle isBold>Circle Plus Subscriber: </Subtitle>
-          <Subtitle>{subscriptions.isSubscribed ? "Yes" : "No"}</Subtitle>
+          <Subtitle isBold>Subscriber: </Subtitle>
+          <Subtitle>
+            {subscriptions.isSubscribed ? "Circle Plus" : "Trial"}
+          </Subtitle>
         </Section>
         <Section>
           <Subtitle isBold>Preferred audio voice</Subtitle>

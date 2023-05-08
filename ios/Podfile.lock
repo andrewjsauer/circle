@@ -1231,6 +1231,8 @@ PODS:
     - React-RCTImage
   - RNSVG (13.8.0):
     - React-Core
+  - RNTestFlight (1.1.0):
+    - React-Core
   - RNVectorIcons (9.2.0):
     - React-Core
   - SwiftAudioEx (0.15.3)
@@ -1298,6 +1300,7 @@ DEPENDENCIES:
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSVG (from `../node_modules/react-native-svg`)
+  - RNTestFlight (from `../node_modules/react-native-test-flight`)
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -1455,6 +1458,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-screens"
   RNSVG:
     :path: "../node_modules/react-native-svg"
+  RNTestFlight:
+    :path: "../node_modules/react-native-test-flight"
   RNVectorIcons:
     :path: "../node_modules/react-native-vector-icons"
   Yoga:
@@ -1553,10 +1558,11 @@ SPEC CHECKSUMS:
   RNReanimated: 73afd1a9b4087e403163e0d300854cb99260c9b6
   RNScreens: 218801c16a2782546d30bd2026bb625c0302d70f
   RNSVG: c1e76b81c76cdcd34b4e1188852892dc280eb902
+  RNTestFlight: 3419178faa8527ecfe803607fd338a3803f1fb0d
   RNVectorIcons: fcc2f6cb32f5735b586e66d14103a74ce6ad61f8
   SwiftAudioEx: 83eabba2940924fc1c0d5cb0896049921365229c
   Yoga: 17cd9a50243093b547c1e539c749928dd68152da
 
-PODFILE CHECKSUM: 2da22252f7ad558cb6003058362a8af60e879370
+PODFILE CHECKSUM: 240bad8addd96e93977592fcfff09c052b0d17b2
 
 COCOAPODS: 1.11.3

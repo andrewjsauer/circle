@@ -1,9 +1,7 @@
-import React, { useEffect, memo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-
-import crashlytics from "@react-native-firebase/crashlytics";
-
-import { requestSubscription, getSubscriptions } from "react-native-iap";
+import { withIAPContext } from "react-native-iap";
+import { Alert } from "react-native";
 
 import {
   selectUserData,
@@ -21,6 +19,8 @@ import {
 } from "@constants/meditations";
 import { getTimeOfDay } from "@utils";
 import { trackScreen, trackEvent } from "@utils/analytics";
+
+import { useInAppPurchases } from "./hooks";
 
 import TrialModal from "./trial-modal";
 import TrialLock from "./trial-lock";
@@ -44,7 +44,6 @@ import {
 } from "./styles";
 
 const Home = ({ navigation }: any) => {
-  const [isSubscribing, setIsSubscribing] = useState(false);
   const [shouldShowSubscriptionModal, setShouldShowSubscriptionModal] =
     useState(false);
 
@@ -52,8 +51,35 @@ const Home = ({ navigation }: any) => {
   const userSubscriptions = useSelector(selectNumOfSubscribedSessionsLeft);
   const isSubscribed = useSelector(selectIsSubscribed);
 
+  const {
+    isSubscribing,
+    isSubscriptionReady,
+    subscriptionErrorMessage,
+    handleSubscribe,
+  } = useInAppPurchases(
+    shouldShowSubscriptionModal,
+    setShouldShowSubscriptionModal,
+    isSubscribed,
+  );
+
   const timeOfDay = getTimeOfDay();
   const name = userData?.name ? `${userData?.name}` : "Hello!";
+
+  useEffect(() => {
+    if (subscriptionErrorMessage) {
+      Alert.alert(
+        "Subscription Error",
+        `There was an error processing your subscription: ${subscriptionErrorMessage}`,
+        [
+          {
+            text: "Cancel",
+            style: "cancel",
+          },
+          { text: "OK" },
+        ],
+      );
+    }
+  }, [subscriptionErrorMessage]);
 
   useEffect(() => {
     trackScreen("DashboardScreen");
@@ -72,31 +98,6 @@ const Home = ({ navigation }: any) => {
 
     trackEvent("meditation_started");
     navigation.navigate(routes.MEDITATION_BUILDER_SCREEN, { meditation, name });
-  };
-
-  const handleSubscribe = async () => {
-    trackEvent("subscription_started");
-    setIsSubscribing(true);
-
-    try {
-      const [{ productId }] = await getSubscriptions({
-        skus: ["circle_plus_version_1"],
-      });
-
-      await requestSubscription({
-        sku: productId,
-      });
-    } catch (err) {
-      crashlytics().recordError(err);
-      console.log("Error subscribing", err);
-    }
-
-    if (shouldShowSubscriptionModal) {
-      setShouldShowSubscriptionModal(false);
-    }
-
-    setIsSubscribing(false);
-    trackEvent("subscription_ended");
   };
 
   const { personalized, micro, course }: any = userSubscriptions;
@@ -122,8 +123,8 @@ const Home = ({ navigation }: any) => {
                 and courses.
               </TrialText>
               <TrialButton
+                disabled={isSubscribing || !isSubscriptionReady}
                 loading={isSubscribing}
-                disabled={isSubscribing}
                 onPress={handleSubscribe}
               >
                 Go Plus
@@ -239,4 +240,4 @@ const Home = ({ navigation }: any) => {
   );
 };
 
-export default memo(Home);
+export default withIAPContext(Home);

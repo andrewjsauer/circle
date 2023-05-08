@@ -2,6 +2,7 @@ import React, { useState, memo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { BottomNavigation, MD2Colors } from "react-native-paper";
+
 import { Navigation } from "@types";
 
 import Home from "./home";
@@ -18,11 +19,10 @@ const HomeScreen = (navigation) => <Home navigation={navigation} />;
 const MeditationsScreen = (navigation) => (
   <Meditations navigation={navigation} />
 );
-const UserScreen = (navigation) => <User navigation={navigation} />;
+const UserScreen = () => <User />;
 
 const Dashboard = ({ navigation }: Props) => {
   const { t } = useTranslation();
-
   const [index, setIndex] = useState(1);
   const [routes] = useState([
     {
@@ -50,7 +50,7 @@ const Dashboard = ({ navigation }: Props) => {
   const renderScene = BottomNavigation.SceneMap({
     home: () => HomeScreen(navigation),
     saved: () => MeditationsScreen(navigation),
-    user: () => UserScreen(navigation),
+    user: () => UserScreen(),
   });
 
   return isLoading ? (

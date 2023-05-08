@@ -1,4 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
+
+import SplashScreen from "react-native-splash-screen";
+import crashlytics from "@react-native-firebase/crashlytics";
 
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
@@ -18,16 +21,15 @@ import {
 } from "@screens";
 import * as routes from "@constants/routes";
 
-import {
-  useSetupIAP,
-  useAppStateListener,
-  useAuthStateListener,
-} from "./hooks";
+import { useAppStateListener, useAuthStateListener } from "./hooks";
 
 const Stack = createStackNavigator();
 
 export default function App() {
-  useSetupIAP();
+  useEffect(() => {
+    crashlytics().log("App mounted.");
+    SplashScreen.hide();
+  }, []);
 
   const isUserAuthenticated = useAuthStateListener();
 
