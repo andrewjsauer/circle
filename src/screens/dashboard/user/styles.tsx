@@ -41,3 +41,15 @@ export const Subtitle = styled(Text)`
   font-weight: ${(p) => (p.isBold ? "bold" : "normal")};
   margin-bottom: 14px;
 `;
+
+export const TermsText = styled(Text)`
+  font-size: 14px;
+`;
+
+export const TermButtons = styled.View`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  margin-top: 12px;
+`;

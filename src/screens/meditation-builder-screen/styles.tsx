@@ -66,14 +66,12 @@ export const ButtonWrapper = styled.View`
 `;
 
 export const NextButton = styled(Button)`
-  width: 100%;
-  min-width: 200px;
+  width: 200px;
   padding: 4px 0;
 `;
 
 export const PreviousButton = styled(Button)`
-  width: 100%;
-  min-width: 100px;
+  width: 100px;
   padding: 4px 0;
 `;
 

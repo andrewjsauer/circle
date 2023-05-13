@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import auth from "@react-native-firebase/auth";
 
 import { emailValidator, nameValidator } from "@utils";
-import { trackEvent } from "@utils/analytics";
+import { trackEvent, trackScreen } from "@utils/analytics";
 
 import { selectFirebaseUser } from "@store/user/selectors";
 import { login, updateUserData } from "@store/user/slice";
@@ -41,13 +41,7 @@ const Registration = () => {
   const user = useSelector(selectFirebaseUser);
 
   useEffect(() => {
-    const logScreen = async () => {
-      await analytics().logScreenView({
-        screen_name: "RegistrationScreen",
-      });
-    };
-
-    logScreen();
+    trackScreen("RegistrationScreen");
   }, []);
 
   const onSendPressed = async () => {

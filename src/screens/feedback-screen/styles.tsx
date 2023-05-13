@@ -10,11 +10,7 @@ export const Layout = styled.SafeAreaView`
 `;
 
 export const Container = styled.ScrollView`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 100%;
+  flex: 1;
 `;
 
 export const TextInputField = styled(TextInput)`

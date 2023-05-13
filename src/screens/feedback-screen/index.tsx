@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import { KeyboardAvoidingView, StyleSheet, Platform } from "react-native";
 
 import crashlytics from "@react-native-firebase/crashlytics";
 
@@ -20,6 +21,7 @@ import {
   LoadingSpinner,
   ErrorButton,
   ErrorText,
+  Container,
 } from "./styles";
 
 const FeedbackForm = ({ navigation, route }: any) => {
@@ -82,48 +84,65 @@ const FeedbackForm = ({ navigation, route }: any) => {
           <SectionTitle>Saving your session...</SectionTitle>
         </>
       ) : (
-        <>
-          <Section>
-            <Title>We would love to hear your feedback</Title>
-            <Description>
-              This feedback is used to train our AI model to provide you with a
-              better experience next time.
-            </Description>
-          </Section>
-          <Section>
-            <SectionTitle>
-              What aspects of the meditation did you find most helpful?
-            </SectionTitle>
-            <TextInputField
-              value={helpful}
-              onChangeText={setHelpful}
-              mode="outlined"
-              multiline
-              autoFocus
-            />
-          </Section>
-          <Section>
-            <SectionTitle>
-              Were there any parts of the meditation that you felt were not
-              helpful or relevant to you?
-            </SectionTitle>
-            <TextInputField
-              value={notHelpful}
-              onChangeText={setNotHelpful}
-              mode="outlined"
-              multiline
-            />
-          </Section>
-          <Section>
-            <SubmitButton mode="contained" onPress={() => handleSubmit(false)}>
-              Submit
-            </SubmitButton>
-            <SkipButton onPress={() => handleSubmit(true)}>Skip</SkipButton>
-          </Section>
-        </>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.container}
+        >
+          <Container
+            keyboardDismissMode="interactive"
+            keyboardShouldPersistTaps="handled"
+          >
+            <Section>
+              <Title>We would love to hear your feedback</Title>
+              <Description>
+                This feedback is used to train our AI model to provide you with
+                a better experience next time.
+              </Description>
+            </Section>
+            <Section>
+              <SectionTitle>
+                What aspects of the meditation did you find most helpful?
+              </SectionTitle>
+              <TextInputField
+                value={helpful}
+                onChangeText={setHelpful}
+                mode="outlined"
+                multiline
+                autoFocus
+              />
+            </Section>
+            <Section>
+              <SectionTitle>
+                Were there any parts of the meditation that you felt were not
+                helpful or relevant to you?
+              </SectionTitle>
+              <TextInputField
+                value={notHelpful}
+                onChangeText={setNotHelpful}
+                mode="outlined"
+                multiline
+              />
+            </Section>
+            <Section>
+              <SubmitButton
+                mode="contained"
+                onPress={() => handleSubmit(false)}
+              >
+                Submit
+              </SubmitButton>
+              <SkipButton onPress={() => handleSubmit(true)}>Skip</SkipButton>
+            </Section>
+          </Container>
+        </KeyboardAvoidingView>
       )}
     </Layout>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});
 
 export default FeedbackForm;

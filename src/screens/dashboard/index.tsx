@@ -1,6 +1,7 @@
 import React, { useState, memo } from "react";
 import { useTranslation } from "react-i18next";
 
+import { withIAPContext } from "react-native-iap";
 import { BottomNavigation, MD2Colors } from "react-native-paper";
 
 import { Navigation } from "@types";
@@ -8,14 +9,29 @@ import { Navigation } from "@types";
 import Home from "./home";
 import User from "./user";
 import Meditations from "./meditations";
-import { useGetUserData } from "./hooks";
+import { useGetUserData, useInAppPurchases } from "./hooks";
+
 import { Layout, LoadingSpinner, Subtitle } from "./styles";
 
 type Props = {
   navigation: Navigation;
 };
 
-const HomeScreen = (navigation) => <Home navigation={navigation} />;
+const HomeScreen = (
+  navigation,
+  isSubscribing,
+  isSubscriptionReady,
+  subscriptionErrorMessage,
+  handleSubscribe,
+) => (
+  <Home
+    navigation={navigation}
+    onSubscribe={handleSubscribe}
+    subscriptionErrorMessage={subscriptionErrorMessage}
+    isSubscriptionReady={isSubscriptionReady}
+    isSubscribing={isSubscribing}
+  />
+);
 const MeditationsScreen = (navigation) => (
   <Meditations navigation={navigation} />
 );
@@ -47,8 +63,22 @@ const Dashboard = ({ navigation }: Props) => {
 
   const isLoading = useGetUserData();
 
+  const {
+    isSubscribing,
+    isSubscriptionReady,
+    subscriptionErrorMessage,
+    handleSubscribe,
+  } = useInAppPurchases();
+
   const renderScene = BottomNavigation.SceneMap({
-    home: () => HomeScreen(navigation),
+    home: () =>
+      HomeScreen(
+        navigation,
+        isSubscribing,
+        isSubscriptionReady,
+        subscriptionErrorMessage,
+        handleSubscribe,
+      ),
     saved: () => MeditationsScreen(navigation),
     user: () => UserScreen(),
   });
@@ -67,4 +97,4 @@ const Dashboard = ({ navigation }: Props) => {
   );
 };
 
-export default memo(Dashboard);
+export default withIAPContext(memo(Dashboard));

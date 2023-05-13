@@ -1,6 +1,7 @@
 import React, { useEffect, memo } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RadioButton } from "react-native-paper";
+import { useTranslation } from "react-i18next";
 
 import firestore from "@react-native-firebase/firestore";
 import auth from "@react-native-firebase/auth";
@@ -15,6 +16,8 @@ import {
 import { logout } from "@store/user/slice";
 
 import Button from "@components/button";
+import ButtonURL from "@components/button-url";
+
 import { trackScreen, trackEvent } from "@utils/analytics";
 
 import {
@@ -25,9 +28,12 @@ import {
   LogoutSection,
   Subtitle,
   Title,
+  TermsText,
+  TermButtons,
 } from "./styles";
 
 const User = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
 
   const userId: string = useSelector(selectUserId);
@@ -84,7 +90,7 @@ const User = () => {
           <Subtitle>{firebaseUserData?.email}</Subtitle>
         </Section>
         <Section isRow>
-          <Subtitle isBold>Subscriber: </Subtitle>
+          <Subtitle isBold>Membership: </Subtitle>
           <Subtitle>
             {subscriptions.isSubscribed ? "Circle Plus" : "Trial"}
           </Subtitle>
@@ -103,6 +109,21 @@ const User = () => {
           <Button mode="contained" onPress={handleLogout}>
             Logout
           </Button>
+          <TermButtons>
+            <ButtonURL url="https://docs.google.com/forms/d/e/1FAIpQLSdGoky30B_kDbtXwEpMChlHZrF9P7w9x6nqUj6jFWFySGYeMQ/viewform?usp=sf_link">
+              Delete my account
+            </ButtonURL>
+          </TermButtons>
+          <TermButtons>
+            <ButtonURL url="https://docs.google.com/document/d/1aa7YQbnCb1cSFt6vcAurYPqZZ5T-fio8rX0HjqtSLJ8/edit?usp=sharing">
+              {t("terms.termsOfService")}
+            </ButtonURL>
+            <TermsText> {t("and")} </TermsText>
+            <ButtonURL url="https://docs.google.com/document/d/1-gu2BCXOrRabnHfSorQg46H0Hblt6ZP_aHs4gwfIqXw/edit?usp=sharing">
+              {t("terms.privacyPolicy")}
+            </ButtonURL>
+            <TermsText>.</TermsText>
+          </TermButtons>
         </LogoutSection>
       </Container>
     </Layout>

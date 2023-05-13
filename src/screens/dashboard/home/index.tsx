@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { withIAPContext } from "react-native-iap";
 import { Alert } from "react-native";
 
 import {
@@ -19,8 +18,6 @@ import {
 } from "@constants/meditations";
 import { getTimeOfDay } from "@utils";
 import { trackScreen, trackEvent } from "@utils/analytics";
-
-import { useInAppPurchases } from "./hooks";
 
 import TrialModal from "./trial-modal";
 import TrialLock from "./trial-lock";
@@ -43,24 +40,19 @@ import {
   TrialButton,
 } from "./styles";
 
-const Home = ({ navigation }: any) => {
+const Home = ({
+  isSubscribing,
+  isSubscriptionReady,
+  navigation,
+  onSubscribe,
+  subscriptionErrorMessage,
+}: any) => {
   const [shouldShowSubscriptionModal, setShouldShowSubscriptionModal] =
     useState(false);
 
   const userData = useSelector(selectUserData);
   const userSubscriptions = useSelector(selectNumOfSubscribedSessionsLeft);
   const isSubscribed = useSelector(selectIsSubscribed);
-
-  const {
-    isSubscribing,
-    isSubscriptionReady,
-    subscriptionErrorMessage,
-    handleSubscribe,
-  } = useInAppPurchases(
-    shouldShowSubscriptionModal,
-    setShouldShowSubscriptionModal,
-    isSubscribed,
-  );
 
   const timeOfDay = getTimeOfDay();
   const name = userData?.name ? `${userData?.name}` : "Hello!";
@@ -106,7 +98,7 @@ const Home = ({ navigation }: any) => {
       <TrialModal
         isVisible={shouldShowSubscriptionModal}
         onClose={() => setShouldShowSubscriptionModal(false)}
-        onSubscribe={handleSubscribe}
+        onSubscribe={onSubscribe}
         isSubscribing={isSubscribing}
       />
       <Layout>
@@ -125,7 +117,7 @@ const Home = ({ navigation }: any) => {
               <TrialButton
                 disabled={isSubscribing || !isSubscriptionReady}
                 loading={isSubscribing}
-                onPress={handleSubscribe}
+                onPress={onSubscribe}
               >
                 Go Plus
               </TrialButton>
@@ -240,4 +232,4 @@ const Home = ({ navigation }: any) => {
   );
 };
 
-export default withIAPContext(Home);
+export default Home;
