@@ -4,7 +4,10 @@ import { KeyboardAvoidingView, StyleSheet, Platform } from "react-native";
 
 import crashlytics from "@react-native-firebase/crashlytics";
 
-import { selectSubscriptions } from "@store/user/selectors";
+import {
+  selectIsSubscribed,
+  selectNumOfSubscribedSessionsLeft,
+} from "@store/user/selectors";
 import * as routes from "@constants/routes";
 import { trackScreen, trackEvent } from "@utils/analytics";
 
@@ -26,7 +29,10 @@ import {
 
 const FeedbackForm = ({ navigation, route }: any) => {
   const { audioId, data } = route.params;
-  const userSubscriptions: any = useSelector(selectSubscriptions);
+  const isSubscribed: boolean = useSelector(selectIsSubscribed);
+  const numOfSubscribedSessionsLeft: any = useSelector(
+    selectNumOfSubscribedSessionsLeft,
+  );
 
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -40,9 +46,7 @@ const FeedbackForm = ({ navigation, route }: any) => {
   const handleSubmit = async (didSkip) => {
     setIsSaving(true);
 
-    const { isSubscribed } = userSubscriptions;
-    const numOfSubscriptionsLeft = userSubscriptions[data.type];
-
+    const numOfSubscriptionsLeft = numOfSubscribedSessionsLeft[data.type];
     try {
       onSave(
         audioId,

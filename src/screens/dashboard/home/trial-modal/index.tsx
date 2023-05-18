@@ -36,7 +36,7 @@ const TrialModal = ({
               disabled={isSubscribing}
               onPress={onSubscribe}
             >
-              Go Plus
+              Go Plus for $12.99 / Month
             </SubscribeButton>
           </Dialog.Actions>
         </>

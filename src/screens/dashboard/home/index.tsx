@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { memo, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Alert } from "react-native";
 
@@ -119,7 +119,7 @@ const Home = ({
                 loading={isSubscribing}
                 onPress={onSubscribe}
               >
-                Go Plus
+                Go Plus for $12.99 / Month
               </TrialButton>
             </TrialWrapper>
           ) : null}
@@ -232,4 +232,4 @@ const Home = ({
   );
 };
 
-export default Home;
+export default memo(Home);

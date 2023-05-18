@@ -49,7 +49,7 @@ export const getContent = functions
 
     const systemContent =
       // eslint-disable-next-line quotes
-      'You are a highly skilled meditation practitioner, instructor, and writer. Your task is to provide the best meditation script in SSML format, like this "<speak><prosody rate="slow"><p><s>string 1</s><break time="10s"/></p></prosody></speak>". Include appropriate breaks between sentences, like this <break time="5s" />, and add extra breaks in the middle of the session to allow for moments of silence and reflection, <break time="30s" />. Only return the meditation as an SSML formatted script.';
+      `You are an expert in meditation practices, teaching, and scripting. Your assignment is to generate a top-tier meditation script adhering to the SSML format. Here's an example: "<speak><prosody rate="slow"><p><s>example sentence</s><break time="10s"/></p></prosody></speak>". It is important to integrate suitable pauses between sentences, like this: <break time="5s" />, and to incorporate extended silent intervals during the session for contemplation, like this: <break time="30s" />. Your output should exclusively be a meditation script in the SSML format.`;
 
     try {
       const openAIResponse = await openai.createChatCompletion({

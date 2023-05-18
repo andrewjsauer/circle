@@ -74,5 +74,4 @@ export const TrialButton = styled(Button)`
   border-radius: 14px;
   background-color: #fff;
   padding: 2px 0;
-  width: 100px;
 `;

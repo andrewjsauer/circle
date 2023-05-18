@@ -97,4 +97,4 @@ const Dashboard = ({ navigation }: Props) => {
   );
 };
 
-export default withIAPContext(memo(Dashboard));
+export default memo(withIAPContext(Dashboard));

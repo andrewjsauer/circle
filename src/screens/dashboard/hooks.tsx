@@ -11,7 +11,7 @@ import RNTestFlight from "react-native-test-flight";
 import {
   selectFirebaseUser,
   selectUserId,
-  selectSubscriptions,
+  selectIsSubscribed,
 } from "@store/user/selectors";
 import { updateUserData, updateSubscriptions } from "@store/user/slice";
 
@@ -24,8 +24,7 @@ export const useInAppPurchases = () => {
   const [errorMessage, setErrorMessage] = useState("");
 
   const userId: string = useSelector(selectUserId);
-  const userSubscriptions: any = useSelector(selectSubscriptions);
-  const { isSubscribed } = userSubscriptions;
+  const isSubscribed: boolean = useSelector(selectIsSubscribed);
 
   const {
     connected,
@@ -37,34 +36,57 @@ export const useInAppPurchases = () => {
     subscriptions,
   } = useIAP();
 
+  const handleError = (
+    error,
+    context,
+    defaultMessage = "An error occurred",
+  ) => {
+    if (error instanceof PurchaseError) {
+      console.log({ message: `[${error.code}]: ${error.message}`, error });
+      crashlytics().recordError(error);
+      setErrorMessage(`Purchase Error: ${error.message}`);
+    } else if (error.message && error.message.includes("Network Error")) {
+      console.log(`${context} network error`, error);
+      crashlytics().recordError(error);
+      setErrorMessage("Network error, please try again later");
+    } else {
+      console.log(`${context} error`, error);
+      crashlytics().recordError(error);
+      setErrorMessage(defaultMessage);
+    }
+  };
+
+  useEffect(() => {
+    if (initConnectionError) {
+      handleError(
+        initConnectionError,
+        "initConnection",
+        "Error connecting to the store",
+      );
+    }
+
+    if (currentPurchaseError) {
+      handleError(
+        currentPurchaseError,
+        "currentPurchase",
+        "Error getting your purchase",
+      );
+    }
+  }, [initConnectionError, currentPurchaseError]);
+
   useEffect(() => {
     const fetchSubscriptions = async () => {
       try {
         await getSubscriptions({ skus: [SKU] });
       } catch (error) {
-        crashlytics().recordError(error);
-        console.log("Error getting subscriptions", error);
+        handleError(error, "getSubscriptions", "Error getting subscriptions");
+      } finally {
+        setIsSubscribing(false);
       }
     };
 
     fetchSubscriptions();
   }, []);
-
-  useEffect(() => {
-    if (initConnectionError) {
-      console.log("initConnectionError", initConnectionError);
-      crashlytics().recordError(initConnectionError);
-
-      setErrorMessage("Error connecting to the store");
-    }
-
-    if (currentPurchaseError) {
-      console.log("currentPurchaseError", currentPurchaseError);
-      crashlytics().recordError(currentPurchaseError);
-
-      setErrorMessage("Error getting your purchase");
-    }
-  }, [initConnectionError, currentPurchaseError]);
 
   useEffect(() => {
     const validateReceipt = async (receipt) => {
@@ -76,11 +98,12 @@ export const useInAppPurchases = () => {
           isSubscribed,
         });
 
-        console.log("data", data);
-
         if (data?.error) {
-          crashlytics().recordError(new Error(data.error));
-          throw new Error(data.error);
+          handleError(
+            data.error,
+            "validateReceipt",
+            "Error thrown validating receipt",
+          );
         } else {
           await finishTransaction({
             isConsumable: true,
@@ -91,14 +114,8 @@ export const useInAppPurchases = () => {
           trackEvent("subscription_ended");
         }
       } catch (error: any) {
-        if (error instanceof PurchaseError) {
-          console.log({ message: `[${error.code}]: ${error.message}`, error });
-          crashlytics().recordError(error);
-        } else {
-          console.log("validateReceipt error", error);
-          crashlytics().recordError(error);
-        }
-
+        handleError(error, "validateReceipt", "Error validating receipt");
+      } finally {
         setIsSubscribing(false);
       }
     };
@@ -117,19 +134,12 @@ export const useInAppPurchases = () => {
     try {
       await requestSubscription({ sku: productId });
     } catch (error) {
-      if (error instanceof PurchaseError) {
-        crashlytics().recordError(error);
-        console.log({
-          message: `[${error.code}]: ${error.message}`,
-          error,
-        });
-
-        setErrorMessage("Error requesting subscription");
-      } else {
-        console.log("requestSubscription error", error);
-        crashlytics().recordError(error);
-      }
-
+      handleError(
+        error,
+        "requestSubscription",
+        "Error requesting subscription",
+      );
+    } finally {
       setIsSubscribing(false);
     }
   };
