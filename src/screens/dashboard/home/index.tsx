@@ -1,6 +1,5 @@
 import React, { memo, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { Alert } from "react-native";
 
 import {
   selectUserData,
@@ -45,7 +44,6 @@ const Home = ({
   isSubscriptionReady,
   navigation,
   onSubscribe,
-  subscriptionErrorMessage,
 }: any) => {
   const [shouldShowSubscriptionModal, setShouldShowSubscriptionModal] =
     useState(false);
@@ -56,22 +54,6 @@ const Home = ({
 
   const timeOfDay = getTimeOfDay();
   const name = userData?.name ? `${userData?.name}` : "Hello!";
-
-  useEffect(() => {
-    if (subscriptionErrorMessage) {
-      Alert.alert(
-        "Subscription Error",
-        `There was an error processing your subscription: ${subscriptionErrorMessage}`,
-        [
-          {
-            text: "Cancel",
-            style: "cancel",
-          },
-          { text: "OK" },
-        ],
-      );
-    }
-  }, [subscriptionErrorMessage]);
 
   useEffect(() => {
     trackScreen("DashboardScreen");
@@ -96,7 +78,7 @@ const Home = ({
   return (
     <>
       <TrialModal
-        isVisible={shouldShowSubscriptionModal}
+        isVisible={shouldShowSubscriptionModal && isSubscriptionReady}
         onClose={() => setShouldShowSubscriptionModal(false)}
         onSubscribe={onSubscribe}
         isSubscribing={isSubscribing}
@@ -107,7 +89,7 @@ const Home = ({
             <TypeOfDayText>Good {timeOfDay}</TypeOfDayText>
             <NameText>{name}</NameText>
           </Header>
-          {!isSubscribed ? (
+          {!isSubscribed && isSubscriptionReady ? (
             <TrialWrapper>
               <TrialTitle>Upgrade to Circle Plus</TrialTitle>
               <TrialText>
@@ -115,7 +97,7 @@ const Home = ({
                 and courses.
               </TrialText>
               <TrialButton
-                disabled={isSubscribing || !isSubscriptionReady}
+                disabled={isSubscribing}
                 loading={isSubscribing}
                 onPress={onSubscribe}
               >

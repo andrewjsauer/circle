@@ -5,6 +5,8 @@
   "scripts": {
     "android": "react-native run-android",
     "android-sync": "cd android && ./gradlew clean",
+    "android-build": "cd android && ./gradlew bundleRelease",
+    "android-build-test": "npx react-native run-android --variant=release",
     "ios": "react-native run-ios",
     "ios-8": "react-native run-ios --simulator='iPhone 8 (16.2)'",
     "start": "watchman watch-del-all && react-native start",

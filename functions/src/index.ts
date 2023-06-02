@@ -5,8 +5,9 @@ import * as admin from "firebase-admin";
 
 import { defineSecret } from "firebase-functions/params";
 
-import * as ssmlCheck from "ssml-check";
 import axios from "axios";
+import { google } from "googleapis";
+import * as ssmlCheck from "ssml-check";
 import { camelizeKeys } from "humps";
 
 import { v4 as uuidv4 } from "uuid";
@@ -28,6 +29,7 @@ const openApiKey = defineSecret("OPEN_AI_API_KEY");
 const awsAccessKey = defineSecret("AWS_TEXT_TO_SPEECH_ACCESS_KEY");
 const awsSecretKey = defineSecret("AWS_TEXT_TO_SPEECH_KEY");
 const appleSharedSecret = defineSecret("APPLE_SHARED_SECRET");
+const androidServiceAccount = defineSecret("ANDROID_SERVICE_ACCOUNT");
 
 const configuration = new Configuration({
   apiKey: process.env.OPEN_AI_API_KEY,
@@ -267,6 +269,47 @@ export const validateReceipt = functions
       }
 
       return { error: "Subscription has been cancelled" };
+    }
+  });
+
+export const getAccessToken = functions
+  .runWith({ secrets: [androidServiceAccount] })
+  .https.onCall(async (_, context) => {
+    if (!context.auth) {
+      throw new functions.https.HttpsError(
+        "unauthenticated",
+        "Endpoint requires authentication!",
+      );
+    }
+
+    try {
+      functions.logger.info("Requesting access token");
+
+      const serviceAccount = JSON.parse(process.env.ANDROID_SERVICE_ACCOUNT);
+
+      const JWTClient = new google.auth.JWT(
+        serviceAccount.client_email,
+        null,
+        serviceAccount.private_key,
+        ["https://www.googleapis.com/auth/androidpublisher"],
+      );
+
+      const accessToken = await JWTClient.getAccessToken();
+
+      functions.logger.info("Access token acquired", accessToken);
+
+      return accessToken;
+    } catch (error: any) {
+      if (error.response) {
+        functions.logger.error(`Error status ${error.response.status}`);
+        functions.logger.error(
+          `Error data ${JSON.stringify(error.response.data)}`,
+        );
+      } else {
+        functions.logger.error(`Error message ${error}`);
+      }
+
+      return { error: JSON.stringify(error) };
     }
   });
 

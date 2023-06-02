@@ -1,5 +1,6 @@
-import React, { useState, memo } from "react";
+import React, { useEffect, useState, memo } from "react";
 import { useTranslation } from "react-i18next";
+import { Alert } from "react-native";
 
 import { withIAPContext } from "react-native-iap";
 import { BottomNavigation, MD2Colors } from "react-native-paper";
@@ -18,16 +19,14 @@ type Props = {
 };
 
 const HomeScreen = (
-  navigation,
+  handleSubscribe,
   isSubscribing,
   isSubscriptionReady,
-  subscriptionErrorMessage,
-  handleSubscribe,
+  navigation,
 ) => (
   <Home
     navigation={navigation}
     onSubscribe={handleSubscribe}
-    subscriptionErrorMessage={subscriptionErrorMessage}
     isSubscriptionReady={isSubscriptionReady}
     isSubscribing={isSubscribing}
   />
@@ -64,20 +63,38 @@ const Dashboard = ({ navigation }: Props) => {
   const isLoading = useGetUserData();
 
   const {
+    handleSubscribe,
     isSubscribing,
     isSubscriptionReady,
+    onSubscriptionErrorMessage,
     subscriptionErrorMessage,
-    handleSubscribe,
   } = useInAppPurchases();
+
+  useEffect(() => {
+    if (subscriptionErrorMessage) {
+      Alert.alert(
+        "Subscription Error",
+        `There was an error processing your subscription: ${subscriptionErrorMessage}`,
+        [
+          {
+            text: "Cancel",
+            style: "cancel",
+          },
+          { text: "OK" },
+        ],
+      );
+
+      onSubscriptionErrorMessage("");
+    }
+  }, [subscriptionErrorMessage]);
 
   const renderScene = BottomNavigation.SceneMap({
     home: () =>
       HomeScreen(
-        navigation,
+        handleSubscribe,
         isSubscribing,
         isSubscriptionReady,
-        subscriptionErrorMessage,
-        handleSubscribe,
+        navigation,
       ),
     saved: () => MeditationsScreen(navigation),
     user: () => UserScreen(),

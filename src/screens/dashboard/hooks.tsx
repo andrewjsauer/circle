@@ -1,11 +1,17 @@
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { Platform } from "react-native";
 
 import crashlytics from "@react-native-firebase/crashlytics";
 import firestore from "@react-native-firebase/firestore";
 import functions from "@react-native-firebase/functions";
 
-import { PurchaseError, requestSubscription, useIAP } from "react-native-iap";
+import {
+  PurchaseError,
+  requestSubscription,
+  useIAP,
+  validateReceiptAndroid,
+} from "react-native-iap";
 import RNTestFlight from "react-native-test-flight";
 
 import {
@@ -29,7 +35,6 @@ export const useInAppPurchases = () => {
   const {
     connected,
     currentPurchase,
-    currentPurchaseError,
     finishTransaction,
     getSubscriptions,
     initConnectionError,
@@ -64,18 +69,12 @@ export const useInAppPurchases = () => {
         "Error connecting to the store",
       );
     }
-
-    if (currentPurchaseError) {
-      handleError(
-        currentPurchaseError,
-        "currentPurchase",
-        "Error getting your purchase",
-      );
-    }
-  }, [initConnectionError, currentPurchaseError]);
+  }, [initConnectionError]);
 
   useEffect(() => {
     const fetchSubscriptions = async () => {
+      setIsSubscribing(true);
+
       try {
         await getSubscriptions({ skus: [SKU] });
       } catch (error) {
@@ -88,8 +87,91 @@ export const useInAppPurchases = () => {
     fetchSubscriptions();
   }, []);
 
+  const unsubscribeUser = async () => {
+    try {
+      const subscriptionRef = firestore()
+        .collection("subscriptions")
+        .doc(userId);
+
+      await subscriptionRef.set({ isSubscribed: false }, { merge: true });
+      console.log("User unsubscribed");
+    } catch (error: any) {
+      handleError(error, "unsubscribeUser", "Error unsubscribing user");
+    }
+  };
+
+  const subscribeUser = async (receipt) => {
+    if (!isSubscribed) {
+      try {
+        const subscriptionRef = firestore()
+          .collection("subscriptions")
+          .doc(userId);
+
+        await subscriptionRef.set({ isSubscribed: true }, { merge: true });
+
+        const subscriptionCollectionRef = firestore()
+          .collection("subscriptions")
+          .doc(userId)
+          .collection("subscriptions")
+          .doc();
+        await subscriptionCollectionRef.set(
+          { subscriptions: firestore.FieldValue.arrayUnion(receipt) },
+          { merge: true },
+        );
+
+        console.log("User subscribed");
+      } catch (error: any) {
+        handleError(error, "subscribeUser", "Error subscribing user");
+      }
+    } else {
+      console.log("User already subscribed");
+    }
+  };
+
   useEffect(() => {
-    const validateReceipt = async (receipt) => {
+    const androidValidateReceipt = async () => {
+      try {
+        const { data } = await functions().httpsCallable("getAccessToken")();
+
+        const response = await validateReceiptAndroid({
+          packageName: currentPurchase.packageNameAndroid,
+          productId: currentPurchase.productId,
+          productToken: currentPurchase.purchaseToken,
+          accessToken: data,
+          isSub: true,
+        });
+
+        console.log("response", response);
+
+        if (data?.error) {
+          handleError(
+            data.error,
+            "validateReceipt",
+            "Error thrown validating receipt",
+          );
+        } else {
+          if (response.status === "canceled" || response.status === "paused") {
+            await unsubscribeUser();
+          } else if (response.status === "purchased") {
+            await subscribeUser(response);
+          }
+
+          await finishTransaction({
+            isConsumable: true,
+            purchase: currentPurchase,
+          });
+
+          setIsSubscribing(false);
+          trackEvent("subscription_ended");
+        }
+      } catch (error: any) {
+        handleError(error, "validateReceipt", "Error validating receipt");
+      } finally {
+        setIsSubscribing(false);
+      }
+    };
+
+    const iOSValidateReceipt = async (receipt) => {
       try {
         const { data } = await functions().httpsCallable("validateReceipt")({
           isTest: __DEV__ || RNTestFlight.isTestFlight,
@@ -121,7 +203,8 @@ export const useInAppPurchases = () => {
     };
 
     if (currentPurchase && currentPurchase.transactionReceipt) {
-      validateReceipt(currentPurchase.transactionReceipt);
+      if (Platform.OS === "android") androidValidateReceipt();
+      else iOSValidateReceipt(currentPurchase.transactionReceipt);
     }
   }, [currentPurchase, finishTransaction]);
 
@@ -129,10 +212,23 @@ export const useInAppPurchases = () => {
     setIsSubscribing(true);
     trackEvent("subscription_started");
 
-    const { productId } = subscriptions[0];
+    const { productId, subscriptionOfferDetails } = subscriptions[0];
+    console.log("subscriptions[0]", subscriptions[0]);
 
     try {
-      await requestSubscription({ sku: productId });
+      const test = await requestSubscription({
+        sku: productId,
+        ...(subscriptionOfferDetails && {
+          subscriptionOffers: [
+            {
+              sku: productId,
+              offerToken: subscriptionOfferDetails[0].offerToken,
+            },
+          ],
+        }),
+      });
+
+      console.log("test", test);
     } catch (error) {
       handleError(
         error,
@@ -144,10 +240,14 @@ export const useInAppPurchases = () => {
     }
   };
 
+  console.log("currentPurchase", currentPurchase);
+  console.log("subscriptions", JSON.stringify(subscriptions));
+
   return {
     handleSubscribe,
     isSubscribing,
     isSubscriptionReady: connected && subscriptions.length > 0,
+    onSubscriptionErrorMessage: setErrorMessage,
     subscriptionErrorMessage: errorMessage,
   };
 };
