@@ -1,9 +1,11 @@
 import React, { useEffect } from "react";
 
+import SplashScreen from "react-native-splash-screen";
+import crashlytics from "@react-native-firebase/crashlytics";
+
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { Provider as PaperProvider } from "react-native-paper";
-import SplashScreen from "react-native-splash-screen";
 
 import { theme } from "@utils";
 import {
@@ -15,6 +17,7 @@ import {
   MeditationBuilderScreen,
   PlayerScreen,
   RegisterScreen,
+  FeedbackScreen,
 } from "@screens";
 import * as routes from "@constants/routes";
 
@@ -24,6 +27,7 @@ const Stack = createStackNavigator();
 
 export default function App() {
   useEffect(() => {
+    crashlytics().log("App mounted.");
     SplashScreen.hide();
   }, []);
 
@@ -74,6 +78,11 @@ export default function App() {
                 options={{ headerShown: false }}
                 name={routes.PLAYER_SCREEN}
                 component={PlayerScreen}
+              />
+              <Stack.Screen
+                options={{ headerShown: false }}
+                name={routes.FEEDBACK_SCREEN}
+                component={FeedbackScreen}
               />
             </>
           )}

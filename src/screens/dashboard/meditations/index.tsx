@@ -1,23 +1,20 @@
 import React, { useState, useEffect, memo } from "react";
 import { useSelector } from "react-redux";
-import { List } from "react-native-paper";
 
 import firestore from "@react-native-firebase/firestore";
-import storage from "@react-native-firebase/storage";
 
-import backgroundImage from "@assets/background.png";
 import { selectUserId, selectIsUserLoggedIn } from "@store/user/selectors";
 import * as routes from "@constants/routes";
+import { trackScreen, trackEvent } from "@utils/analytics";
 
-import MeditationItem from "./meditation-item";
+import MeditationItem from "./item";
 import {
-  Container,
   Layout,
   LoadingContainer,
   LoadingSpinner,
   LoadingTitle,
-  MeditationList,
-  Subtitle,
+  List,
+  Title,
   NoMeditationsText,
 } from "./styles";
 
@@ -27,18 +24,20 @@ const Meditations = ({ navigation }) => {
 
   const [meditations, setMeditations] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    trackScreen("SavedMeditationsScreen");
+  }, []);
 
   useEffect(() => {
     const subscriber = firestore()
-      .collection("users")
-      .doc(userId)
       .collection("meditations")
+      .where("userId", "==", userId)
       .onSnapshot((querySnapshot) => {
         if (!isUserLoggedIn) return;
         setIsLoading(true);
 
-        const meditationData = [];
+        const meditationData: any = [];
 
         querySnapshot.forEach((doc) => {
           const data = doc.data();
@@ -46,7 +45,10 @@ const Meditations = ({ navigation }) => {
 
           const isMeditation = data?.createdAt?.seconds ?? false;
           if (isMeditation) {
-            meditationData.push(data);
+            meditationData.push({
+              ...data,
+              audioId: doc.id,
+            });
           }
         });
 
@@ -61,44 +63,25 @@ const Meditations = ({ navigation }) => {
     return () => subscriber();
   }, []);
 
-  const handlePlay = (audioId) => {
+  const handlePlay = async (audioId) => {
+    trackEvent("play_meditation_request");
+
     navigation.navigate(routes.PLAYER_SCREEN, {
       audioId,
       isSavedMeditation: true,
     });
   };
 
-  const handleDelete = async (meditationId) => {
-    setIsDeleting(true);
-
-    try {
-      firestore()
-        .collection("users")
-        .doc(userId)
-        .collection("meditations")
-        .doc(meditationId)
-        .delete();
-
-      firestore().collection("meditations").doc(meditationId).delete();
-
-      storage().ref(`audio/${meditationId}.mp3`).delete();
-    } catch (error) {
-      console.log("error", error);
-    }
-
-    setIsDeleting(false);
-  };
-
   return (
-    <Layout source={backgroundImage}>
+    <Layout>
       {isLoading ? (
         <LoadingContainer>
           <LoadingSpinner size="large" />
           <LoadingTitle>Loading profile...</LoadingTitle>
         </LoadingContainer>
       ) : (
-        <Container>
-          <Subtitle>Saved meditations ({meditations.length || 0})</Subtitle>
+        <>
+          <Title>Your meditations ({meditations.length || 0})</Title>
           {!meditations.length ? (
             <LoadingContainer>
               <NoMeditationsText>
@@ -106,21 +89,17 @@ const Meditations = ({ navigation }) => {
               </NoMeditationsText>
             </LoadingContainer>
           ) : (
-            <MeditationList>
-              <List.AccordionGroup>
-                {meditations.map((meditation) => (
-                  <MeditationItem
-                    key={meditation.id}
-                    onPlay={handlePlay}
-                    onDelete={handleDelete}
-                    item={meditation}
-                    isDeleting={isDeleting}
-                  />
-                ))}
-              </List.AccordionGroup>
-            </MeditationList>
+            <List>
+              {meditations.map((meditation) => (
+                <MeditationItem
+                  key={meditation.audioId}
+                  onPlay={handlePlay}
+                  item={meditation}
+                />
+              ))}
+            </List>
           )}
-        </Container>
+        </>
       )}
     </Layout>
   );

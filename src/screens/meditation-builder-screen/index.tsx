@@ -1,23 +1,26 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { TouchableWithoutFeedback, Keyboard, Platform } from "react-native";
 import { useSelector } from "react-redux";
 import Filter from "bad-words";
 
 import functions from "@react-native-firebase/functions";
 import firestore from "@react-native-firebase/firestore";
+import crashlytics from "@react-native-firebase/crashlytics";
 
 import CloseButton from "@components/close-button";
 import * as routes from "@constants/routes";
 
 import { Navigation } from "@types";
-import { selectUserData } from "@store/user/selectors";
+import { selectUserData, selectUserId } from "@store/user/selectors";
 import { getTimeOfDay } from "@utils";
+import { trackScreen, trackEvent } from "@utils/analytics";
 
 import Dropdown from "./dropdown";
 import TextInput from "./text-input";
 import BreathingCircle from "./breathing-circle";
 
 import {
+  BreathingText,
   PreviousButton,
   ButtonWrapper,
   ErrorButton,
@@ -54,6 +57,7 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
   const [textInputError, setTextInputError] = useState("");
 
   const userData = useSelector(selectUserData);
+  const userId = useSelector(selectUserId);
 
   const { questions } = meditation;
   const questionsLength = questions.length;
@@ -61,14 +65,24 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
   const isLastQuestion = currentQuestionIndex === questionsLength - 1;
   const isFirstQuestion = currentQuestionIndex === 0;
 
-  const handleOptionSelect = (questionId, optionValue, isTextInput = false) => {
+  useEffect(() => {
+    trackScreen(routes.MEDITATION_BUILDER_SCREEN);
+  }, []);
+
+  const handleOptionSelect = async (
+    questionId,
+    optionValue,
+    isTextInput = false,
+  ) => {
     if (isTextInput) {
       const maxWords = 120;
       const filter = new Filter();
 
       if (filter.isProfane(optionValue)) {
+        trackEvent("meditation_builder_inappropriate_content");
         return setTextInputError("Please avoid using inappropriate content.");
       } else if (optionValue.length > maxWords) {
+        trackEvent("meditation_builder_input_too_long");
         return setTextInputError("Please limit your input to 120 characters.");
       } else {
         setTextInputError("");
@@ -81,17 +95,20 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
     }));
   };
 
-  const handlePreviousQuestion = () => {
+  const handlePreviousQuestion = async () => {
+    trackEvent("meditation_builder_previous_question");
     setCurrentQuestionIndex(currentQuestionIndex - 1);
   };
 
   const handleNextQuestion = async () => {
     if (isLastQuestion) {
-      setUploadMessage("Creating your personalized meditation...");
+      trackEvent("meditation_builder_submitted");
+
+      setUploadMessage("Creating your meditation...");
       setIsUploading(true);
       setUploadError(null);
 
-      const prompt = meditation.prompt({ ...answers, user_name: name });
+      const prompt = meditation.prompt({ ...answers, userName: name });
 
       const payload = {
         ...answers,
@@ -103,14 +120,15 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
       };
 
       delete payload.questions;
+      let contentData: any = {};
 
-      const { data: contentData } = await functions().httpsCallable(
-        "getContent",
-      )({ prompt });
+      try {
+        ({ data: contentData } = await functions().httpsCallable("getContent", {
+          timeout: 5 * 60 * 1000,
+        })({ prompt }));
+      } catch (error: any) {
+        crashlytics().recordError(error);
 
-      const { content, error: contentError } = contentData;
-
-      if (contentError) {
         setUploadError(
           `Looks like there was an error creating your meditation. Please try again later. Error: ${error}`,
         );
@@ -118,24 +136,49 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
         return;
       }
 
-      setUploadMessage("Almost done! Converting your meditation into audio...");
+      const { content, usage, error: contentError } = contentData;
 
-      const { data: audioData } = await functions().httpsCallable("getAudio")({
-        content,
-      });
-
-      const { audioId, error: audioError } = audioData;
-
-      if (audioError) {
+      if (contentError) {
         setUploadError(
-          `Looks like there was an error turning your meditation into audio. Please try again later. Error: ${audioError}`,
+          `Looks like there was an error creating your meditation. Please try again later. Error: ${error}`,
+        );
+        setIsUploading(false);
+        crashlytics().log(contentError);
+        return;
+      }
+
+      setUploadMessage("Almost done!");
+      let audioData: any = {};
+
+      try {
+        ({ data: audioData } = await functions().httpsCallable("getAudio")({
+          content,
+          userId,
+        }));
+      } catch (error: any) {
+        crashlytics().recordError(error);
+
+        setUploadError(
+          `Looks like there was an error turning your meditation into audio. Please try again. Error: ${error}`,
         );
         setIsUploading(false);
         return;
       }
 
+      const { audioId, error: audioError } = audioData;
+
+      if (audioError) {
+        setUploadError(
+          `Looks like there was an error turning your meditation into audio. Please try again. Error: ${audioError}`,
+        );
+        setIsUploading(false);
+
+        crashlytics().log(audioError);
+        return;
+      }
+
       navigation.navigate(routes.PLAYER_SCREEN, {
-        data: payload,
+        data: { ...payload, content, usage },
         audioId,
         isSavedMeditation: false,
       });
@@ -155,12 +198,15 @@ const MeditationBuilderScreen = ({ navigation, route }: Props) => {
       <>
         <CompleteTitle>{uploadMessage}</CompleteTitle>
         <CompleteSubTitle>
-          Please allow up to a minute or so. In the meantime, let&apos;s take a
-          few deep breaths.
+          We use a the latest AI models to create your personalized meditation
+          which can be slow, so please allow up to a minute or so.
         </CompleteSubTitle>
         <BreathingCircleView>
           <BreathingCircle />
         </BreathingCircleView>
+        <BreathingText>
+          In the meantime, let&apos;s take a few deep breaths.
+        </BreathingText>
       </>
     );
   } else if (uploadError) {

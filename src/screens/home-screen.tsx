@@ -1,7 +1,9 @@
-import React, { memo } from "react";
+import React, { memo, useEffect } from "react";
 import { StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { useTranslation } from "react-i18next";
+
+import { trackScreen, trackEvent } from "@utils/analytics";
 
 import Background from "@components/background";
 import Button from "@components/button";
@@ -18,11 +20,17 @@ type Props = {
 const HomeScreen = ({ navigation }: Props) => {
   const { t } = useTranslation();
 
-  const handleLoginPress = () => {
+  useEffect(() => {
+    trackScreen(routes.HOME_SCREEN);
+  }, []);
+
+  const handleLoginPress = async () => {
+    trackEvent("login_button_pressed");
     navigation.navigate(routes.LOGIN_SCREEN);
   };
 
-  const handleRegistrationPress = () => {
+  const handleRegistrationPress = async () => {
+    trackEvent("registration_button_pressed");
     navigation.navigate(routes.REGISTER_SCREEN);
   };
 
@@ -71,7 +79,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     display: "flex",
     justifyContent: "center",
-    marginVertical: 30,
+    marginTop: 20,
   },
   button: {
     marginBottom: 10,

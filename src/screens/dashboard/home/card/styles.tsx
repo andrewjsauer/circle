@@ -18,6 +18,7 @@ export const Wrapper = styled(TouchableRipple)`
   border-radius: 30px;
   background-color: #f1f3f4;
   padding: 20px;
+  margin-top: 14px;
 `;
 
 export const Content = styled.View`

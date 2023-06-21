@@ -1,6 +1,8 @@
-import React, { useRef, memo } from "react";
+import React, { useRef, useEffect, memo } from "react";
 import { View } from "react-native";
 import { useDispatch } from "react-redux";
+
+import crashlytics from "@react-native-firebase/crashlytics";
 
 import PhoneInput from "react-native-phone-number-input";
 import auth from "@react-native-firebase/auth";
@@ -9,6 +11,7 @@ import { login } from "@store/user/slice";
 
 import * as routes from "@constants/routes";
 import { Navigation } from "@types";
+import { trackEvent, trackScreen } from "@utils/analytics";
 
 import TextInput from "@components/text-input";
 import BackButton from "@components/back-button";
@@ -45,10 +48,18 @@ const Auth = ({
   const { t } = useTranslation();
   const phoneInputRef = useRef<PhoneInput>(null);
 
+  useEffect(() => {
+    trackScreen("AuthenticationScreen");
+  }, []);
+
   const signInWithPhoneNumber = async (number) => {
     onIsLoading(true);
 
     const confirmation = await auth().signInWithPhoneNumber(number);
+
+    trackEvent("phone_number_submitted", {
+      number,
+    });
 
     onIsLoading(false);
     onConfirm(confirmation);
@@ -60,8 +71,11 @@ const Auth = ({
     try {
       await confirm.confirm(vcode);
     } catch (error) {
+      crashlytics().recordError(error);
       onCode({ ...phoneNumber, error: t("errors.invalidCode") });
     }
+
+    trackEvent("confirmed_verification_code");
 
     const user = auth().currentUser;
     dispatch(login(user));
@@ -74,6 +88,8 @@ const Auth = ({
 
     if (!value) {
       onCode({ ...phoneNumber, error: t("errors.verificationCodeEmpty") });
+      trackEvent("verification_code_empty");
+
       return;
     }
 
@@ -86,9 +102,13 @@ const Auth = ({
 
     if (!value) {
       onPhoneNumber({ ...phoneNumber, error: t("errors.phoneNumberEmpty") });
+      trackEvent("phone_number_empty");
+
       return;
     } else if (!isValid) {
       onPhoneNumber({ ...phoneNumber, error: t("errors.phoneNumberInvalid") });
+      trackEvent("phone_number_invalid");
+
       return;
     }
 

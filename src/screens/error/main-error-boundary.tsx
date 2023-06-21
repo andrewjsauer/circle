@@ -1,4 +1,6 @@
 import * as React from "react";
+import crashlytics from "@react-native-firebase/crashlytics";
+
 import FallbackScreen from "./fallback-screen";
 
 interface Props {
@@ -15,10 +17,9 @@ class ErrorBoundary extends React.Component<Props, State> {
     hasError: false,
   };
 
-  public componentDidCatch(
-    _error: Error /* errorInfo: React.ErrorInfo */,
-  ): void {
-    // log error
+  public componentDidCatch(_error: Error): void {
+    console.log("componentDidCatch", _error);
+    crashlytics().recordError(new Error(_error));
   }
 
   public static getDerivedStateFromError(_: Error): State {

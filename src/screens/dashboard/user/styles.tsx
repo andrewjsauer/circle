@@ -1,27 +1,27 @@
 import styled from "styled-components/native";
 import { Text } from "react-native-paper";
 
-export const Layout = styled.ImageBackground`
+export const Layout = styled.SafeAreaView`
+  height: 100%;
+`;
+
+export const Container = styled.View`
+  display: flex;
+  flex-direction: column;
   height: 100%;
   padding: 0 20px;
 `;
 
-export const Container = styled.SafeAreaView`
-  display: flex;
-  height: 100%;
-`;
-
 export const TitleSection = styled.View`
-  flex: 1;
   display: flex;
-  justify-content: center;
-  justify-content: flex-start;
+  margin-bottom: 40px;
 `;
 
-export const UserOptionSection = styled.View`
-  flex: 1;
+export const Section = styled.View`
+  width: 100%;
+  margin-bottom: 20px;
   display: flex;
-  justify-content: flex-start;
+  flex-direction: ${(p) => (p.isRow ? "row" : "column")};
 `;
 
 export const LogoutSection = styled.View`
@@ -37,7 +37,19 @@ export const Title = styled(Text)`
 `;
 
 export const Subtitle = styled(Text)`
-  font-size: 20px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: ${(p) => (p.isBold ? "bold" : "normal")};
   margin-bottom: 14px;
+`;
+
+export const TermsText = styled(Text)`
+  font-size: 14px;
+`;
+
+export const TermButtons = styled.View`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  margin-top: 12px;
 `;

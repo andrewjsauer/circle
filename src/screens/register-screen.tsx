@@ -12,6 +12,7 @@ import Registration from "@components/registration";
 
 import * as routes from "@constants/routes";
 import { Navigation } from "@types";
+import { trackScreen } from "@utils/analytics";
 
 type Props = {
   navigation: Navigation;
@@ -27,6 +28,10 @@ const RegisterScreen = ({ navigation }: Props) => {
 
   const isUserLoggedIn = useSelector(selectIsUserLoggedIn);
   const isUserAlreadyRegistered = useSelector(selectIsUserAlreadyRegistered);
+
+  useEffect(() => {
+    trackScreen(routes.REGISTER_SCREEN);
+  }, []);
 
   useEffect(() => {
     if (isUserLoggedIn) {

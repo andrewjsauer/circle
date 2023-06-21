@@ -6,3 +6,4 @@ export const DASHBOARD_SCREEN = "Dashboard";
 export const PLAYER_SCREEN = "PlayerScreen";
 export const BROWSER_SCREEN = "Browser";
 export const COURSES_SCREEN = "CoursesScreen";
+export const FEEDBACK_SCREEN = "FeedbackScreen";

@@ -1,10 +1,14 @@
+/* eslint-disable operator-linebreak */
 /* eslint-disable max-len */
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 
 import { defineSecret } from "firebase-functions/params";
 
+import axios from "axios";
+import { google } from "googleapis";
 import * as ssmlCheck from "ssml-check";
+import { camelizeKeys } from "humps";
 
 import { v4 as uuidv4 } from "uuid";
 import { Configuration, OpenAIApi } from "openai";
@@ -18,10 +22,14 @@ admin.initializeApp({
 });
 
 const bucket = admin.storage().bucket();
+const storage = admin.firestore();
+const { FieldValue } = admin.firestore;
 
 const openApiKey = defineSecret("OPEN_AI_API_KEY");
 const awsAccessKey = defineSecret("AWS_TEXT_TO_SPEECH_ACCESS_KEY");
 const awsSecretKey = defineSecret("AWS_TEXT_TO_SPEECH_KEY");
+const appleSharedSecret = defineSecret("APPLE_SHARED_SECRET");
+const androidServiceAccount = defineSecret("ANDROID_SERVICE_ACCOUNT");
 
 const configuration = new Configuration({
   apiKey: process.env.OPEN_AI_API_KEY,
@@ -29,7 +37,7 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration);
 
 export const getContent = functions
-  .runWith({ secrets: [openApiKey] })
+  .runWith({ secrets: [openApiKey], timeoutSeconds: 5 * 60 })
   .https.onCall(async (data, context) => {
     if (!context.auth) {
       throw new functions.https.HttpsError(
@@ -39,16 +47,15 @@ export const getContent = functions
     }
 
     let content = null;
-
     const { prompt } = data;
 
     const systemContent =
       // eslint-disable-next-line quotes
-      'You are a highly skilled meditation practitioner, instructor, and writer. Your task is to provide the best meditation script in SSML format, like this "<speak><prosody rate="slow"><p><s>string 1</s><break time="10s"/><s>string 2</s><break time="20s"/><s>string 3</s></p></prosody></speak>". Include appropriate breaks between sentences for a smooth meditation experience, like this <break time="20s" />. Do not include apologies, notes, or commentary, only return the SSML formatted script.';
+      `You are an expert in meditation practices, teaching, and scripting. Your assignment is to generate a top-tier meditation script adhering to the SSML format. Here's an example: "<speak><prosody rate="slow"><p><s>example sentence</s><break time="10s"/></p></prosody></speak>". It is important to integrate suitable pauses between sentences, like this: <break time="5s" />, and to incorporate extended silent intervals during the session for contemplation, like this: <break time="30s" />. Your output should exclusively be a meditation script in the SSML format.`;
 
     try {
       const openAIResponse = await openai.createChatCompletion({
-        model: "gpt-3.5-turbo",
+        model: "gpt-4",
         messages: [
           {
             role: "system",
@@ -59,15 +66,16 @@ export const getContent = functions
             content: prompt,
           },
         ],
+        max_tokens: 800,
         temperature: 0.8,
       });
 
-      content = openAIResponse.data.choices[0].message.content;
+      ({ content } = openAIResponse.data.choices[0].message);
       functions.logger.info("OpenAI response", content);
 
       ssmlCheck.verifyAndFix(content).then((result) => {
         if (result.fixedSSML) {
-          functions.logger.info("Fixed SSML response");
+          functions.logger.info("Fixed SSML response", result.fixedSSML);
           content = result.fixedSSML;
         } else if (result.errors) {
           throw new Error("Invalid parsed response received from OpenAI");
@@ -76,7 +84,7 @@ export const getContent = functions
         }
       });
 
-      return { content };
+      return { content, usage: openAIResponse.data.usage };
     } catch (error: any) {
       if (error.response) {
         functions.logger.info(`Error status ${error.response.status}`);
@@ -136,6 +144,161 @@ export const getAudio = functions
 
       functions.logger.info("Audio uploaded successfully");
       return { audioId };
+    } catch (error: any) {
+      if (error.response) {
+        functions.logger.error(`Error status ${error.response.status}`);
+        functions.logger.error(
+          `Error data ${JSON.stringify(error.response.data)}`,
+        );
+      } else {
+        functions.logger.error(`Error message ${error}`);
+      }
+
+      return { error: JSON.stringify(error) };
+    }
+  });
+
+export const validateReceipt = functions
+  .runWith({ secrets: [appleSharedSecret] })
+  .https.onCall(async (data, context) => {
+    if (!context.auth) {
+      throw new functions.https.HttpsError(
+        "unauthenticated",
+        "Endpoint requires authentication!",
+      );
+    }
+
+    const { receipt, isTest, userId, isSubscribed } = data;
+    functions.logger.info("Validating receipt", JSON.stringify(data));
+
+    let result;
+
+    const url = isTest
+      ? "https://sandbox.itunes.apple.com/verifyReceipt"
+      : "https://buy.itunes.apple.com/verifyReceipt";
+
+    const request = {
+      "receipt-data": receipt,
+      password: process.env.APPLE_SHARED_SECRET,
+      exclude_old_transactions: true,
+    };
+
+    functions.logger.info("Apple request", request);
+
+    try {
+      const response = await axios.post(url, request);
+      result = camelizeKeys(response.data);
+
+      functions.logger.info("Apple response", result);
+    } catch (error: any) {
+      functions.logger.error(`Error ${error}`);
+      return { error: JSON.stringify(error) };
+    }
+
+    if (result.status === 0) {
+      functions.logger.info("Receipt is valid");
+
+      if (!isSubscribed) {
+        try {
+          const subscriptionRef = storage
+            .collection("subscriptions")
+            .doc(userId);
+          await subscriptionRef.set(
+            {
+              isSubscribed: true,
+            },
+            { merge: true },
+          );
+
+          const subscriptionCollectionRef = storage
+            .collection("subscriptions")
+            .doc(userId)
+            .collection("subscriptions")
+            .doc();
+          await subscriptionCollectionRef.set(
+            {
+              subscriptions: FieldValue.arrayUnion(result),
+            },
+            { merge: true },
+          );
+        } catch (error: any) {
+          functions.logger.error(`Error updating receipt: ${error}`);
+          return { error: JSON.stringify(error) };
+        }
+      } else {
+        functions.logger.info("User already subscribed");
+      }
+
+      return true;
+    } else if (result.status === 21006) {
+      functions.logger.info("Receipt is valid, but subscription has expired");
+
+      try {
+        const subscriptionRef = storage.collection("subscriptions").doc(userId);
+        await subscriptionRef.set({ isSubscribed: false }, { merge: true });
+      } catch (error: any) {
+        functions.logger.error(`Error updating subscription: ${error}`);
+        return { error: JSON.stringify(error) };
+      }
+
+      return { error: "Subscription has expired" };
+    } else if (result.status === 21007 || result.status === 21008) {
+      functions.logger.info("Receipt is invalid or could not be authenticated");
+
+      try {
+        const subscriptionRef = storage.collection("subscriptions").doc(userId);
+        await subscriptionRef.set({ isSubscribed: false }, { merge: true });
+      } catch (error: any) {
+        functions.logger.error(`Error updating subscription: ${error}`);
+        return { error: JSON.stringify(error) };
+      }
+
+      return { error: "Receipt is invalid or could not be authenticated" };
+    } else if (result.status === 21100 || result.status === 21199) {
+      functions.logger.info("Internal error occurred");
+      return { error: "Internal error occurred" };
+    } else if (result.status === 21010) {
+      functions.logger.info("Subscription has been cancelled");
+
+      try {
+        const subscriptionRef = storage.collection("subscriptions").doc(userId);
+        await subscriptionRef.set({ isSubscribed: false }, { merge: true });
+      } catch (error: any) {
+        functions.logger.error(`Error updating subscription: ${error}`);
+        return { error: JSON.stringify(error) };
+      }
+
+      return { error: "Subscription has been cancelled" };
+    }
+  });
+
+export const getAccessToken = functions
+  .runWith({ secrets: [androidServiceAccount] })
+  .https.onCall(async (_, context) => {
+    if (!context.auth) {
+      throw new functions.https.HttpsError(
+        "unauthenticated",
+        "Endpoint requires authentication!",
+      );
+    }
+
+    try {
+      functions.logger.info("Requesting access token");
+
+      const serviceAccount = JSON.parse(process.env.ANDROID_SERVICE_ACCOUNT);
+
+      const JWTClient = new google.auth.JWT(
+        serviceAccount.client_email,
+        null,
+        serviceAccount.private_key,
+        ["https://www.googleapis.com/auth/androidpublisher"],
+      );
+
+      const accessToken = await JWTClient.getAccessToken();
+
+      functions.logger.info("Access token acquired", accessToken);
+
+      return accessToken;
     } catch (error: any) {
       if (error.response) {
         functions.logger.error(`Error status ${error.response.status}`);

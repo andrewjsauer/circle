@@ -6,3 +6,4 @@ export { default as Dashboard } from "./dashboard";
 export { default as MeditationBuilderScreen } from "./meditation-builder-screen";
 export { default as PlayerScreen } from "./player-screen";
 export { default as CoursesScreen } from "./courses-screen";
+export { default as FeedbackScreen } from "./feedback-screen";

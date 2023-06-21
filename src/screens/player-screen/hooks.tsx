@@ -2,6 +2,8 @@
 import { useEffect, useState } from "react";
 import storage from "@react-native-firebase/storage";
 
+import crashlytics from "@react-native-firebase/crashlytics";
+
 import TrackPlayer, {
   useProgress,
   usePlaybackState,
@@ -10,6 +12,8 @@ import TrackPlayer, {
   AppKilledPlaybackBehavior,
   Capability,
 } from "react-native-track-player";
+
+import { trackEvent } from "@utils/analytics";
 
 const setupPlayer = async () => {
   const setup = async () => {
@@ -43,7 +47,7 @@ const SetupService = async () => {
   });
 };
 
-const useSetupPlayer = (meditationId, meditationUrl) => {
+const useSetupPlayer = (audioId, meditationUrl) => {
   const [playerReady, setPlayerReady] = useState<boolean>(false);
 
   useEffect(() => {
@@ -57,11 +61,11 @@ const useSetupPlayer = (meditationId, meditationUrl) => {
         if (unmounted) return;
 
         await TrackPlayer.add({
-          id: meditationId,
+          id: audioId,
           url: meditationUrl,
           title: "Meditation",
           artist: "Circle",
-          // create a new artwork object for this track
+          artwork: require("@assets/logo.png"),
         });
       })();
     }
@@ -74,11 +78,11 @@ const useSetupPlayer = (meditationId, meditationUrl) => {
   return playerReady;
 };
 
-export const usePlayer = (meditationId, onClose) => {
+export const usePlayer = (audioId, onClose) => {
   const [isLoading, setIsLoading] = useState(true);
   const [meditationUrl, setMeditationUrl] = useState("");
 
-  const isPlayerReady = useSetupPlayer(meditationId, meditationUrl);
+  const isPlayerReady = useSetupPlayer(audioId, meditationUrl);
 
   const playbackState = usePlaybackState();
   const { position, duration } = useProgress();
@@ -92,13 +96,18 @@ export const usePlayer = (meditationId, onClose) => {
   useEffect(() => {
     const setupAudio = async () => {
       try {
-        const filePath = `audio/${meditationId}.mp3`;
+        const filePath = `audio/${audioId}.mp3`;
         const url = await storage().ref(filePath).getDownloadURL();
+
+        trackEvent("audio_played", {
+          audioId,
+        });
 
         setMeditationUrl(url);
         setIsLoading(false);
-      } catch (error) {
-        console.error("Error fetching audio:", error);
+      } catch (error: any) {
+        console.log("Setup audio error", error);
+        crashlytics().recordError(error);
         setIsLoading(false);
       }
     };

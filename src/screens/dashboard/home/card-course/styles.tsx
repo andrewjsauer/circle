@@ -12,6 +12,7 @@ export const Content = styled.View`
   justify-content: space-between;
   display: flex;
   max-width: 280px;
+  min-height: 250px;
 `;
 
 export const Title = styled(Text)`

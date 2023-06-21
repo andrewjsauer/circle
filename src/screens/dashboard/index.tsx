@@ -1,29 +1,43 @@
-import React, { useState, memo } from "react";
+import React, { useEffect, useState, memo } from "react";
 import { useTranslation } from "react-i18next";
+import { Alert } from "react-native";
 
+import { withIAPContext } from "react-native-iap";
 import { BottomNavigation, MD2Colors } from "react-native-paper";
+
 import { Navigation } from "@types";
-import backgroundImage from "@assets/background.png";
 
 import Home from "./home";
 import User from "./user";
 import Meditations from "./meditations";
-import { useGetUserData } from "./hooks";
+import { useGetUserData, useInAppPurchases } from "./hooks";
+
 import { Layout, LoadingSpinner, Subtitle } from "./styles";
 
 type Props = {
   navigation: Navigation;
 };
 
-const HomeScreen = (navigation) => <Home navigation={navigation} />;
+const HomeScreen = (
+  handleSubscribe,
+  isSubscribing,
+  isSubscriptionReady,
+  navigation,
+) => (
+  <Home
+    navigation={navigation}
+    onSubscribe={handleSubscribe}
+    isSubscriptionReady={isSubscriptionReady}
+    isSubscribing={isSubscribing}
+  />
+);
 const MeditationsScreen = (navigation) => (
   <Meditations navigation={navigation} />
 );
-const UserScreen = (navigation) => <User navigation={navigation} />;
+const UserScreen = () => <User />;
 
 const Dashboard = ({ navigation }: Props) => {
   const { t } = useTranslation();
-
   const [index, setIndex] = useState(1);
   const [routes] = useState([
     {
@@ -48,14 +62,46 @@ const Dashboard = ({ navigation }: Props) => {
 
   const isLoading = useGetUserData();
 
+  const {
+    handleSubscribe,
+    isSubscribing,
+    isSubscriptionReady,
+    onSubscriptionErrorMessage,
+    subscriptionErrorMessage,
+  } = useInAppPurchases();
+
+  useEffect(() => {
+    if (subscriptionErrorMessage) {
+      Alert.alert(
+        "Subscription Error",
+        `There was an error processing your subscription: ${subscriptionErrorMessage}`,
+        [
+          {
+            text: "Cancel",
+            style: "cancel",
+          },
+          { text: "OK" },
+        ],
+      );
+
+      onSubscriptionErrorMessage("");
+    }
+  }, [subscriptionErrorMessage]);
+
   const renderScene = BottomNavigation.SceneMap({
-    home: () => HomeScreen(navigation),
+    home: () =>
+      HomeScreen(
+        handleSubscribe,
+        isSubscribing,
+        isSubscriptionReady,
+        navigation,
+      ),
     saved: () => MeditationsScreen(navigation),
-    user: () => UserScreen(navigation),
+    user: () => UserScreen(),
   });
 
   return isLoading ? (
-    <Layout source={backgroundImage}>
+    <Layout>
       <LoadingSpinner size="large" animating={true} color={MD2Colors.blue500} />
       <Subtitle variant="titleLarge">{t("fetchingYourData")}</Subtitle>
     </Layout>
@@ -68,4 +114,4 @@ const Dashboard = ({ navigation }: Props) => {
   );
 };
 
-export default memo(Dashboard);
+export default memo(withIAPContext(Dashboard));

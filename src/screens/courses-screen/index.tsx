@@ -1,5 +1,4 @@
-import React, { useState, useEffect, memo } from "react";
-import { List, Text } from "react-native-paper";
+import React, { useEffect, memo } from "react";
 
 import { Navigation } from "@types";
 import * as routes from "@constants/routes";
@@ -7,6 +6,7 @@ import * as routes from "@constants/routes";
 import BackButton from "@components/back-button";
 
 import { meditationsByCourseType } from "@constants/meditations";
+import { trackScreen } from "@utils/analytics";
 
 import CardCourse from "../dashboard/home/card-course";
 import { CardWrapper, LessonList, Content, Layout, Title } from "./styles";
@@ -24,6 +24,10 @@ interface Props {
 const CoursesScreen = ({ navigation, route }: Props) => {
   const { meditation, name } = route.params;
 
+  useEffect(() => {
+    trackScreen(routes.COURSES_SCREEN);
+  }, []);
+
   const lessons = meditationsByCourseType[meditation.id];
   return (
     <Layout>
@@ -40,7 +44,12 @@ const CoursesScreen = ({ navigation, route }: Props) => {
                 color={meditation.color}
                 onPress={() =>
                   navigation.navigate(routes.MEDITATION_BUILDER_SCREEN, {
-                    meditation: { ...lesson, ...meditation },
+                    meditation: {
+                      ...lesson,
+                      ...meditation,
+                      lessonTitle: lesson.title,
+                      lessonDescription: lesson.description,
+                    },
                     name,
                   })
                 }

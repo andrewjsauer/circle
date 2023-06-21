@@ -1,19 +1,14 @@
 import styled from "styled-components/native";
 import { Text, ActivityIndicator } from "react-native-paper";
 
-export const MeditationList = styled.ScrollView`
+export const List = styled.ScrollView`
   height: 75%;
   padding: 0 12px;
 `;
 
-export const Layout = styled.ImageBackground`
+export const Layout = styled.SafeAreaView`
   height: 100%;
-`;
-
-export const Container = styled.SafeAreaView`
   display: flex;
-  height: 100%;
-  padding: 0 24px;
 `;
 
 export const LoadingContainer = styled.SafeAreaView`
@@ -28,8 +23,8 @@ export const LoadingSpinner = styled(ActivityIndicator)`
   margin-bottom: 24px;
 `;
 
-export const Subtitle = styled(Text)`
-  font-size: 20px;
+export const Title = styled(Text)`
+  font-size: 22px;
   font-weight: 600;
   margin: 18px 0;
   padding: 0 18px;

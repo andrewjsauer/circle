@@ -1,11 +1,13 @@
 import firestore from "@react-native-firebase/firestore";
+import crashlytics from "@react-native-firebase/crashlytics";
 
 export const updateUserEmail = async (user, userEmail) => {
   try {
     await user.updateEmail(userEmail);
     return true;
   } catch (error) {
-    console.log("Update email failed", error);
+    console.log("Update email failed");
+    crashlytics().recordError(error);
     return false;
   }
 };
@@ -19,16 +21,17 @@ export const checkUsername = async (username) => {
     const usernameQuery = await query.get();
 
     usernameQuery.forEach((doc) => {
-      const { displayName: otherDisplayName } = doc.data();
+      const data = doc.data();
 
-      if (otherDisplayName) {
-        return false;
+      if (data.displayName === username) {
+        throw new Error("Username already exists");
       }
     });
 
     return true;
   } catch (error) {
-    console.log("Display name check failed", error);
+    crashlytics().recordError(error);
+    console.log("Username check failed");
     return false;
   }
 };
@@ -40,9 +43,17 @@ export const updateUser = (user, firstName) => {
       id: user.uid,
     });
 
+    firestore().collection("subscriptions").doc(user.uid).set({
+      course: 0,
+      isSubscribed: false,
+      micro: 1,
+      personalized: 1,
+    });
+
     return true;
   } catch (error) {
-    console.log("Display name check failed", error);
+    console.log("Update user failed");
+    crashlytics().recordError(error);
     return false;
   }
 };
@@ -52,7 +63,8 @@ export const updateUserProfile = async (user, username) => {
     await user.updateProfile({ displayName: username });
     return true;
   } catch (error) {
-    console.log("Update user profile failed", error);
+    crashlytics().recordError(error);
+    console.log("Update user profile failed");
     return false;
   }
 };
@@ -65,7 +77,8 @@ export const addUserProfile = (username) => {
 
     return true;
   } catch (error) {
-    console.log("Update user profile failed", error);
+    crashlytics().recordError(error);
+    console.log("Add user profile failed");
     return false;
   }
 };

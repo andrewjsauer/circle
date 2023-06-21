@@ -12,7 +12,7 @@ export const Wrapper = styled(TouchableRipple)`
   border-radius: 30px;
   background-color: #f1f3f4;
   padding: 20px;
-  min-height: 175px;
+  height: 175px;
 `;
 
 export const Content = styled.View`
@@ -41,6 +41,15 @@ export const TextWrapper = styled.View`
   max-width: 180px;
 `;
 
+export const PlayWrapper = styled.View`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  margin-left: 14px;
+  margin-top: 30px;
+`;
+
 export const PlayButtonWrapper = styled.View`
   background-color: ${(p) => (p.color ? p.color : "#000")};
   border-radius: 50px;
@@ -49,6 +58,4 @@ export const PlayButtonWrapper = styled.View`
   display: flex;
   align-items: center;
   justify-content: center;
-  flex: 1;
-  margin-left: 14px;
 `;

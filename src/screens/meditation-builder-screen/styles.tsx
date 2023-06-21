@@ -66,14 +66,12 @@ export const ButtonWrapper = styled.View`
 `;
 
 export const NextButton = styled(Button)`
-  width: 100%;
-  min-width: 200px;
+  width: 200px;
   padding: 4px 0;
 `;
 
 export const PreviousButton = styled(Button)`
-  width: 100%;
-  min-width: 100px;
+  width: 100px;
   padding: 4px 0;
 `;
 
@@ -88,15 +86,28 @@ export const LoadingSpinner = styled(ActivityIndicator)`
 `;
 
 export const CompleteTitle = styled(Text)`
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 600;
   text-align: center;
+  width: 100%;
+  padding: 0 12px;
 `;
 
 export const CompleteSubTitle = styled(Text)`
-  font-size: 18px;
-  text-align: center;
+  font-size: 16px;
+  text-align: left;
   margin-top: 12px;
+  width: 100%;
+  padding: 0 12px;
+  text-align: center;
+`;
+
+export const BreathingText = styled(Text)`
+  font-size: 22px;
+  font-weight: 600;
+  text-align: center;
+  margin-top: 40px;
+  padding: 0 12px;
 `;
 
 export const ErrorButton = styled(Button)`

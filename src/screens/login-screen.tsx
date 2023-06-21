@@ -1,6 +1,8 @@
 import React, { memo, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
+import { trackScreen } from "@utils/analytics";
+
 import {
   selectIsUserLoggedIn,
   selectIsUserAlreadyRegistered,
@@ -25,6 +27,10 @@ const LoginScreen = ({ navigation }: Props) => {
 
   const isUserLoggedIn = useSelector(selectIsUserLoggedIn);
   const isUserAlreadyRegistered = useSelector(selectIsUserAlreadyRegistered);
+
+  useEffect(() => {
+    trackScreen(routes.LOGIN_SCREEN);
+  }, []);
 
   useEffect(() => {
     if (isUserLoggedIn) {

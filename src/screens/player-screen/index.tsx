@@ -1,32 +1,27 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { Text } from "react-native-paper";
 
 import TrackPlayer, { State } from "react-native-track-player";
 
 import * as routes from "@constants/routes";
 
 import CloseButton from "@components/close-button";
-import backgroundImage from "@assets/background.png";
 import Icon from "react-native-vector-icons/Feather";
-import Button from "@components/button";
 import { Navigation } from "@types";
+import { trackEvent, trackScreen } from "@utils/analytics";
 
 import { selectUserId } from "@store/user/selectors";
 
 import {
   AudioView,
   AudioTime,
-  ButtonWrapper,
-  CompleteText,
-  CompleteTitle,
   LoadingLayout,
   LoadingSpinner,
+  LoadingText,
   Layout,
 } from "./styles";
 import AudioButton from "./audio-button";
 import { usePlayer } from "./hooks";
-import { onMeditationSave, onMeditationDelete } from "./utils";
 
 const formatDuration = (seconds) => {
   const minutes = Math.floor(seconds / 60);
@@ -48,23 +43,27 @@ type Props = {
 };
 
 const PlayerScreen = ({ navigation, route }: Props) => {
-  const { audioId, isSavedMeditation } = route.params;
+  const { audioId, data, isSavedMeditation } = route.params;
 
-  const [showEndScreen, setShowEndScreen] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [totalDuration, setTotalDuration] = useState(0);
-
+  const [durationInMinutes, setDurationInMinutes] = useState(0);
   const userId: string = useSelector(selectUserId);
 
-  const handleClose = () => {
+  const handleClose = async () => {
     TrackPlayer.reset();
 
     if (isSavedMeditation) {
-      navigation.navigate(routes.DASHBOARD_SCREEN);
-    } else {
-      setShowEndScreen(true);
+      return navigation.navigate(routes.DASHBOARD_SCREEN);
     }
+
+    return navigation.navigate(routes.FEEDBACK_SCREEN, {
+      audioId,
+      data: { ...data, userId, duration: durationInMinutes },
+    });
   };
+
+  useEffect(() => {
+    trackScreen(routes.PLAYER_SCREEN);
+  }, []);
 
   const { playbackState, isPlayerReady, isLoading, duration, position } =
     usePlayer(audioId, handleClose);
@@ -81,74 +80,26 @@ const PlayerScreen = ({ navigation, route }: Props) => {
 
   useEffect(() => {
     if (duration) {
-      const durationInMinutes = Math.floor(duration / 60);
-      setTotalDuration(durationInMinutes);
+      const minutes = Math.floor(duration / 60);
+      setDurationInMinutes(minutes);
     }
   }, [duration]);
 
   const handlePlayPause = async () => {
     if (playbackState === State.Playing) {
       await TrackPlayer.pause();
+      trackEvent("pause_meditation");
     } else {
       await TrackPlayer.play();
+      trackEvent("play_meditation");
     }
   };
-
-  const handleSave = async () => {
-    setIsSaving(true);
-
-    const isMeditationSaved = !route.params?.data ?? false;
-    const meditationData = !isMeditationSaved ? route.params.data : null;
-
-    try {
-      await onMeditationSave(audioId, meditationData, userId, totalDuration);
-    } catch (error) {
-      console.error("Error saving meditation:", error);
-    }
-
-    navigation.navigate(routes.DASHBOARD_SCREEN);
-    setIsSaving(false);
-  };
-
-  const handleNoThanks = async () => {
-    try {
-      await onMeditationDelete(audioId);
-    } catch (error) {
-      console.error("Error deleting meditation:", error);
-    }
-
-    navigation.navigate(routes.DASHBOARD_SCREEN);
-  };
-
-  if (showEndScreen) {
-    return (
-      <LoadingLayout source={backgroundImage}>
-        <CompleteTitle>Finished!</CompleteTitle>
-        <CompleteText>
-          Would you like to save this meditation to listen to later?
-        </CompleteText>
-        <ButtonWrapper>
-          <Button
-            loading={isSaving}
-            disabled={isSaving}
-            onPress={handleSave}
-            mode="contained"
-          >
-            Save
-          </Button>
-          <Button disabled={isSaving} onPress={handleNoThanks}>
-            No thanks
-          </Button>
-        </ButtonWrapper>
-      </LoadingLayout>
-    );
-  }
 
   if (isLoading || !duration || !isPlayerReady) {
     return (
-      <LoadingLayout source={backgroundImage}>
+      <LoadingLayout>
         <LoadingSpinner size={50} />
-        <Text variant="titleMedium">Loading meditation...</Text>
+        <LoadingText>Loading your personalized meditation...</LoadingText>
       </LoadingLayout>
     );
   }
@@ -157,7 +108,7 @@ const PlayerScreen = ({ navigation, route }: Props) => {
   return (
     <>
       <CloseButton onPress={handleClose} />
-      <Layout source={backgroundImage}>
+      <Layout>
         <AudioView>
           <Icon name="clock" size={34} color="#000" />
           <AudioTime>{formatDuration(timeLeft)}</AudioTime>
